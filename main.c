@@ -17,6 +17,7 @@
 #define IMPRIME_ERRO_REGISTRO printf(ERRO_REGISTRO);
 #define ARQUIVO_SAIDA "saida.bin"
 #define ARQUIVO_DESFRAGMENTADO "desfragmentacao.bin"
+#define ARQUIVO_BUFFER "buffer-info.text"
 
 typedef struct {
 	REGISTRO** registro;
@@ -194,11 +195,12 @@ VETREGISTROS* RecuperaTodosRegistros() {
 	fread(&registroExiste, sizeof(registroExiste), 1, fp); // checa se o arquvivo está com registro removido
  
 	do {
-		if (registroExiste < 0) {	// Caso o arquivo esteja removido, pula o registro.      
+		if (registroExiste < 0) {	// Caso o arquivo esteja removido, pula o registro.
 			fseek(fp, TAMANHO_REGISTRO, SEEK_CUR);
 		} else { // senão, será lido o registro e passado para o vetRegistros
-			vetRegistros->registro = (REGISTRO**)realloc(vetRegistros->registro,
+
 			// aumenta o tamanho do vetor de registros para acrescentar o atual 
+			vetRegistros->registro = (REGISTRO**)realloc(vetRegistros->registro,
 					sizeof(REGISTRO*) * (++vetRegistros->numElementos));
  
 			registro = (REGISTRO*)calloc(1, sizeof(REGISTRO)); // aloca-se um registro auxiliar para receber os dados
