@@ -70,7 +70,7 @@ void InsercaoBufferPool(BUFFER_POOL *buffer, int RRN){
 
 void RemocaoBufferPool(BUFFER_POOL *buffer, int RRN){
 
-	//funcionalidade 14(RRN)
+	//funcionalidade14(RRN)
 
 	int i;
 	for(i = 1; i < TAMANHO_BUFFER; i++)
