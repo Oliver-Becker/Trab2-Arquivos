@@ -4,7 +4,7 @@
 
 	Clara Rosa Silveira 	-  9021070
 	Óliver Savastano Becker - 10284890
-	Rafael Medeiros Vieira	- 10284239
+	Raphael Medeiros Vieira	- 10284239
 						ICMC | USP | 1º semestre 2018
 */
 #ifndef _ARVORE_B_H_
@@ -28,5 +28,8 @@ typedef struct {
 } REGISTRO_ARVORE;
 
 
+int RRNdaRaiz();
+REGISTRO_ARVORE* CriaStruct(int);
+int BuscaArvoreB(REGISTRO_ARVORE*, int);
 
 #endif

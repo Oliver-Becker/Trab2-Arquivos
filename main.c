@@ -4,10 +4,11 @@
 
 	Clara Rosa Silveira 	-  9021070
 	Óliver Savastano Becker - 10284890
-	Rafael Medeiros Vieira	- 10284239
+	Raphael Medeiros Vieira	- 10284239
 						ICMC | USP | 1º semestre 2018
 */
 #include <registro.h>
+#include <arvoreb.h>
 #include <arquivo.h>
 
 #define QUANTIDADE_ARGUMENTOS {3, 2, 4, 3, 3, 8, 9, 2, 2}
@@ -616,6 +617,24 @@ int Funcionalidade9() { //função de recuperação dos RRNs logicamente removid
 	return ImprimeErro(retornoFuncao);
 }
 
+int Funcionalidade12(char* chave) {
+	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
+
+	if (retornoFuncao > 0) {
+		
+		REGISTRO_ARVORE *reg = CriaStruct(RRNdaRaiz()); 
+		retornoFuncao = BuscaArvoreB(reg, atoi(chave));
+
+		if(retornoFuncao > 0){
+			char str[12];
+			sprintf(str, "%d", retornoFuncao);
+			return Funcionalidade4(str);
+		}
+	}
+
+	return ImprimeErro(retornoFuncao);
+}
+
 void ConfereEntrada(int argc, int valorEsperado) {
 	if (argc != valorEsperado) { //verifica se a quantidade de argumentos é válida
 		printf(ERRO_GERAL);
@@ -656,6 +675,8 @@ int main(int argc, char *argv[]){
 			return Funcionalidade8();
 		case 9:
 			return Funcionalidade9();
+		case 12:
+			return Funcionalidade12(argv[1]);
 		default:
 			printf(ERRO_GERAL);
 	}
