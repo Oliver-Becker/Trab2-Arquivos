@@ -25,11 +25,11 @@ typedef struct {
 	int ponteiroSubarvore[ORDEM_DA_ARVORE];	// 'P'
 	int chaveBusca[ORDEM_DA_ARVORE-1];	// 'C'
 	int ponteiroDados[ORDEM_DA_ARVORE-1];	// 'Pr'
-} REGISTRO_ARVORE;
-
+} REGISTRO_ARVORE;	
 
 int RRNdaRaiz();
 REGISTRO_ARVORE* CriaStruct(int);
 int BuscaArvoreB(REGISTRO_ARVORE*, int);
+
 
 #endif

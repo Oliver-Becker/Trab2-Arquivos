@@ -68,5 +68,3 @@ int BuscaArvoreB(REGISTRO_ARVORE *reg, int chave){
 	free(reg);
 	return BuscaArvoreB(CriaStruct(filho), chave);
 }
-
-

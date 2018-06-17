@@ -10,6 +10,7 @@
 #include <registro.h>
 #include <arvoreb.h>
 #include <arquivo.h>
+#include <bufferpool.h>
 
 #define QUANTIDADE_ARGUMENTOS {3, 2, 4, 3, 3, 8, 9, 2, 2}
 #define ERRO_GERAL "Falha no processamento do arquivo.\n"
