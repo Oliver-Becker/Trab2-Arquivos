@@ -27,6 +27,13 @@ typedef struct {
 	int ponteiroDados[ORDEM_DA_ARVORE-1];	// 'Pr'
 } REGISTRO_ARVORE;
 
-
+void CriaArvoreB();
+void AlteraRRNRaiz(int RRN);
+int RRNRaiz();
+void AlteraAlturaDaArvore(int altura);
+int AlturaDaArvore();
+void AlteraUltimoRRN(int RRN);
+int UltimoRRN();
+int InsereIndice(int chave, int RRN);
 
 #endif
