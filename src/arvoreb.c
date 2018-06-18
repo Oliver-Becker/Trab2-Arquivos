@@ -4,7 +4,7 @@
 
 	Clara Rosa Silveira 	-  9021070
 	Óliver Savastano Becker - 10284890
-	Rafael Medeiros Vieira	- 10284239
+	Raphael Medeiros Vieira	- 10284239
 						ICMC | USP | 1º semestre 2018
 */
 #include <arvoreb.h>
@@ -28,7 +28,7 @@ void CriaArvoreB() {
 	fclose(fp);
 }
 
-void AlteraRRNRaiz(int RRN) {
+void AlteraRRNdaRaiz(int RRN) {
 	if (RRN < 0)
 		return;
 
@@ -42,7 +42,7 @@ void AlteraRRNRaiz(int RRN) {
 	fclose(fp);
 }
 
-int RRNRaiz() {
+int RRNdaRaiz() {
 	FILE* fp = fopen(ARQUIVO_ARVORE, "rb");
 	if (fp == NULL)
 		return -1;
@@ -112,7 +112,52 @@ int UltimoRRN() {
 	return RRN;
 }
 
-void InsereIndice() {
+int InsereIndice(int chave, int RRN) {
+
+}
+
+REGISTRO_ARVORE* CriaStruct(int RRN){
 
 
+	FILE *fp = fopen(ARQUIVO_ARVORE, "rb");
+
+	fseek(fp, BYTE_OFFSET_ARVORE(RRN), SEEK_SET);
+
+	REGISTRO_ARVORE *reg = (REGISTRO_ARVORE*) malloc(sizeof(REGISTRO_ARVORE));
+
+	fread(&reg->quantidadeChaves, sizeof(int), 1, fp);
+
+	for(int i = 0; i < ORDEM_DA_ARVORE-1; i++){
+
+		fread(&reg->ponteiroSubarvore[i], sizeof(int), 1, fp);
+		fread(&reg->chaveBusca[i], sizeof(int), 1, fp);
+		fread(&reg->ponteiroDados[i], sizeof(int), 1, fp);
+	}
+
+	fread(&reg->ponteiroSubarvore[ORDEM_DA_ARVORE-1], sizeof(int), 1, fp);
+
+	fclose(fp);
+	
+	return reg;
+}
+
+int BuscaArvoreB(REGISTRO_ARVORE *reg, int chave){
+
+	int i = 0;
+	
+	while(i < reg->quantidadeChaves && chave > reg->chaveBusca[i])
+		i++;
+
+	if(chave == reg->chaveBusca[i]) {
+		int RRN = reg->ponteiroDados[i];
+		free(reg);
+		return RRN;
+	}
+
+	if(reg->ponteiroSubarvore[0] == -1)
+		return -1;
+
+	int filho = reg->ponteiroSubarvore[i];
+	free(reg);
+	return BuscaArvoreB(CriaStruct(filho), chave);
 }
