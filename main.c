@@ -636,6 +636,33 @@ int Funcionalidade12(char* chave) {
 	return ImprimeErro(retornoFuncao);
 }
 
+int Funcionalidade14(char* chave, char* valoresCampo[]){
+
+	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
+
+	if (retornoFuncao > 0) {
+		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 0);
+
+		REGISTRO_ARVORE *reg = CriaStruct(RRNdaRaiz()); 
+		retornoFuncao = BuscaArvoreB(reg, atoi(chave));
+		char str[12];
+		sprintf(str, "%d", retornoFuncao);
+		Funcionalidade7(str, valoresCampo);
+		
+		if(atoi(chave) != atoi(valoresCampo[0])){
+			//remove
+			//insere
+		}
+
+		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 1);
+
+		if (retornoFuncao > 0)
+			printf("Registro alterado com sucesso.\n");
+	}
+
+	return ImprimeErro(retornoFuncao);
+}
+
 void ConfereEntrada(int argc, int valorEsperado) {
 	if (argc != valorEsperado) { //verifica se a quantidade de argumentos é válida
 		printf(ERRO_GERAL);
@@ -677,7 +704,9 @@ int main(int argc, char *argv[]){
 		case 9:
 			return Funcionalidade9();
 		case 12:
-			return Funcionalidade12(argv[1]);
+			return Funcionalidade12(argv[2]);
+		case 14:
+			return Funcionalidade14(argv[2], argv+3);
 		default:
 			printf(ERRO_GERAL);
 	}

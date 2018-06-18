@@ -21,8 +21,13 @@ typedef struct {
 	int RRN;
 	int flag;
 	REGISTRO_ARVORE *pagina;
-}BUFFER_POOL;
+}PAGINA;
 
+typedef struct{
+	int pageFault;
+	int pageHit;
+	PAGINA indice[5];
+}BUFFER_POOL;
 
 BUFFER_POOL* CriaBufferPool();
 int ScaBufferPool(BUFFER_POOL*);
