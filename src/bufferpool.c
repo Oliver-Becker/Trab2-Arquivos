@@ -12,12 +12,15 @@
 
 BUFFER_POOL* CriaBufferPool(){
 
-	BUFFER_POOL *buffer = (BUFFER_POOL*) malloc(sizeof(BUFFER_POOL)*TAMANHO_BUFFER);
+	BUFFER_POOL *buffer = (BUFFER_POOL*) malloc(sizeof(BUFFER_POOL)); 
 
 	for(int i = 0; i < TAMANHO_BUFFER; i++){
-		buffer[i].RRN = -1;
-		buffer[i].flag = 0;
+		buffer->indice[i].RRN = -1;
+		buffer->indice[i].flag = 0;
 	}
+
+	buffer->pageHit = 0;
+	buffer->pageFault = 0;;
 
 	return buffer;
 }
@@ -25,10 +28,10 @@ BUFFER_POOL* CriaBufferPool(){
 int ScaBufferPool(BUFFER_POOL *buffer){
 
 	int i = 0;
-	while(buffer[i].flag){
+	while(buffer->indice[i].flag){
 
-		if(buffer[i].flag)
-			buffer[i].flag = 0;
+		if(buffer->indice[i].flag)
+			buffer->indice[i].flag = 0;
 
 		i++;
 
@@ -41,29 +44,29 @@ int ScaBufferPool(BUFFER_POOL *buffer){
 
 void InsercaoBufferPool(BUFFER_POOL *buffer, int RRN){
 
-	if(buffer[0].RRN == -1){
+	if(buffer->indice[0].RRN == -1){
 
-		buffer[0].pagina = (REGISTRO_ARVORE*) malloc(sizeof(REGISTRO_ARVORE));
-		buffer[0].pagina = CriaStruct(RRN);
+		buffer->indice[0].pagina = (REGISTRO_ARVORE*) malloc(sizeof(REGISTRO_ARVORE));
+		buffer->indice[0].pagina = CriaStruct(RRN);
 		return;
 	}
-	else if(RRNdaRaiz() != buffer[0].RRN){
-		RemocaoBufferPool(buffer, buffer[0].RRN);
-		buffer[0].pagina = CriaStruct(RRNdaRaiz());
+	else if(RRNdaRaiz() != buffer->indice[0].RRN){
+		RemocaoBufferPool(buffer, buffer->indice[0].RRN);
+		buffer->indice[0].pagina = CriaStruct(RRNdaRaiz());
 		return;
 	}	
 
 	int i;
 	for(i = 1; i < TAMANHO_BUFFER; i++)
-		if(buffer[i].RRN == -1)
+		if(buffer->indice[i].RRN == -1)
 			break;
 
 	if(i == TAMANHO_BUFFER)
 		i = ScaBufferPool(buffer);
 
 
-	buffer[i].pagina = (REGISTRO_ARVORE*) malloc(sizeof(REGISTRO_ARVORE));
-	buffer[i].pagina = CriaStruct(RRN);
+	buffer->indice[i].pagina = (REGISTRO_ARVORE*) malloc(sizeof(REGISTRO_ARVORE));
+	buffer->indice[i].pagina = CriaStruct(RRN);
 
 	return;
 }
@@ -74,12 +77,12 @@ void RemocaoBufferPool(BUFFER_POOL *buffer, int RRN){
 
 	int i;
 	for(i = 1; i < TAMANHO_BUFFER; i++)
-		if(buffer[i].RRN == RRN)
+		if(buffer->indice[i].RRN == RRN)
 			break;
 
-	buffer[i].RRN = -1;
-	buffer[i].flag = 0;
-	free(buffer[i].pagina);
+	buffer->indice[i].RRN = -1;
+	buffer->indice[i].flag = 0;
+	free(buffer->indice[i].pagina);
 
 	return;
 }
@@ -87,13 +90,18 @@ void RemocaoBufferPool(BUFFER_POOL *buffer, int RRN){
 REGISTRO_ARVORE* GetBufferPool(BUFFER_POOL *buffer, int RRN){
 
 	int i;
-	for(i = 1; i < TAMANHO_BUFFER; i++)
-		if(buffer[i].RRN == RRN)
+	for(i = 1; i < TAMANHO_BUFFER; i++){
+		if(buffer->indice[i].RRN == RRN){
+			buffer->pageHit++;
 			break;
+		}
+	}
 
-	if(i == TAMANHO_BUFFER)
+	if(i == TAMANHO_BUFFER){
+		buffer->pageFault++;
 		return NULL;
+	}
 
-	return buffer[i].pagina;
+	return buffer->indice[i].pagina;
 
 }

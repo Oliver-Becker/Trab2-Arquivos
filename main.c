@@ -645,7 +645,9 @@ int Funcionalidade14(char* chave, char* valoresCampo[]){
 
 		REGISTRO_ARVORE *reg = CriaStruct(RRNdaRaiz()); 
 		retornoFuncao = BuscaArvoreB(reg, atoi(chave));
-		Funcionalidade7(retornoFuncao, valoresCampo[]);
+		char str[12];
+		sprintf(str, "%d", retornoFuncao);
+		Funcionalidade7(str, valoresCampo);
 		
 		if(atoi(chave) != atoi(valoresCampo[0])){
 			//remove
