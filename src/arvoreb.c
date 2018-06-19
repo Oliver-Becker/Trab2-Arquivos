@@ -45,7 +45,7 @@ void AlteraRRNdaRaiz(int RRN) {
 int RRNdaRaiz() {
 	FILE* fp = fopen(ARQUIVO_ARVORE, "rb");
 	if (fp == NULL)
-		return -1;
+		return -2;
 
 	fseek(fp, POSICAO_NO_RAIZ, SEEK_SET);	// Vai para a posição do noRaiz no cabeçalho.
 
@@ -73,7 +73,7 @@ void AlteraAlturaDaArvore(int altura) {
 int AlturaDaArvore() {
 	FILE* fp = fopen(ARQUIVO_ARVORE, "rb");
 	if (fp == NULL)
-		return -1;
+		return -2;
 
 	fseek(fp, POSICAO_ALTURA, SEEK_SET);	// Vai para a posição da altura no cabeçalho.
 
@@ -101,7 +101,7 @@ void AlteraUltimoRRN(int RRN) {
 int UltimoRRN() {
 	FILE* fp = fopen(ARQUIVO_ARVORE, "rb");
 	if (fp == NULL)
-		return -1;
+		return -2;
 
 	fseek(fp, POSICAO_ULTIMO_RRN, SEEK_SET);// Vai para a posição do ultimoRRN no cabeçalho.
 
@@ -112,14 +112,42 @@ int UltimoRRN() {
 	return RRN;
 }
 
-int InsereIndice(int chave, int RRN) {
+REGISTRO_ARVORE* CriaRegistroArvore() {
+	REGISTRO_ARVORE* registro = (REGISTRO_ARVORE*)malloc(sizeof(REGISTRO_ARVORE));
+	registro->quantidadeChaves = 0;
+	memset(registro->ponteiroSubarvore, -1, sizeof(int) * ORDEM_DA_ARVORE);
+	memset(registro->chaveBusca, -1, sizeof(int) * (ORDEM_DA_ARVORE - 1));
+	memset(registro->ponteiroDados, -1, sizeof(int) * (ORDEM_DA_ARVORE - 1));
 
+	return registro;
 }
 
-REGISTRO_ARVORE* CriaStruct(int RRN){
+void InsereRegistroArvore(REGISTRO_ARVORE* registro, int RRN) {
+	if (registro == NULL || RRN < 0)
+		return;
 
+	FILE* fp = fopen(ARQUIVO_ARVORE, "rb+");
+	if (fp == NULL)
+		return;
 
+	fseek(fp, BYTE_OFFSET_ARVORE(RRN), SEEK_SET);
+
+	fwrite(&registro->quantidadeChaves, sizeof(int), 1, fp);
+	for(int i = 0; i < ORDEM_DA_ARVORE-1; i++){
+		fwrite(&registro->ponteiroSubarvore[i], sizeof(int), 1, fp);
+		fwrite(&registro->chaveBusca[i], sizeof(int), 1, fp);
+		fwrite(&registro->ponteiroDados[i], sizeof(int), 1, fp);
+	}
+
+	fwrite(&registro->ponteiroSubarvore[ORDEM_DA_ARVORE-1], sizeof(int), 1, fp);
+	
+	fclose(fp);
+}
+
+REGISTRO_ARVORE* LeRegistroArvore(int RRN) {
 	FILE *fp = fopen(ARQUIVO_ARVORE, "rb");
+	if (fp == NULL)
+		return NULL;
 
 	fseek(fp, BYTE_OFFSET_ARVORE(RRN), SEEK_SET);
 
@@ -141,6 +169,47 @@ REGISTRO_ARVORE* CriaStruct(int RRN){
 	return reg;
 }
 
+int InsereIndice(int chaveBusca, int RRNRegistroDeDados) {
+
+/*	FILE* fp = fopen(ARQUIVO_ARVORE, "rb");
+	if (fp == NULL)
+		return -1;
+*/
+	REGISTRO_ARVORE* registro = NULL;
+	int raiz = RRNdaRaiz();
+
+	if (raiz == -2) {	// Caso a função retorne erro.
+//		fclose(fp);
+		return -1;
+	}
+	if (raiz < 0) {		// Caso ainda não haja nenhum registro de índice no arquivo.
+		registro = CriaRegistroArvore();
+
+		// Muda o cabeçalho, já que será inserido o primeiro registro de índice.
+		AlteraRRNdaRaiz(0);
+		AlteraUltimoRRN(0);
+		AlteraAlturaDaArvore(0);
+
+		// Insere o índice no registro (como é um nó folha, não terá ponteiros de filho).
+		registro->quantidadeChaves = 1;
+		registro->chaveBusca[0] = chaveBusca;
+		registro->ponteiroDados[0] = RRNRegistroDeDados;
+
+		// Por fim, escreve o novo registro no arquivo de índice.
+		InsereRegistroArvore(registro, 0);
+		
+		free(registro);
+		return 0;	// Finaliza a inserção, sem erros.
+	}
+
+	//registro = LeRegistroArvore(raiz);
+
+
+
+
+	return 0;
+}
+
 int BuscaArvoreB(REGISTRO_ARVORE *reg, int chave){
 
 	int i = 0;
@@ -159,5 +228,5 @@ int BuscaArvoreB(REGISTRO_ARVORE *reg, int chave){
 
 	int filho = reg->ponteiroSubarvore[i];
 	free(reg);
-	return BuscaArvoreB(CriaStruct(filho), chave);
+	return BuscaArvoreB(LeRegistroArvore(filho), chave);
 }

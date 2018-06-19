@@ -47,12 +47,12 @@ void InsercaoBufferPool(BUFFER_POOL *buffer, int RRN){
 	if(buffer->indice[0].RRN == -1){
 
 		buffer->indice[0].pagina = (REGISTRO_ARVORE*) malloc(sizeof(REGISTRO_ARVORE));
-		buffer->indice[0].pagina = CriaStruct(RRN);
+		buffer->indice[0].pagina = LeRegistroArvore(RRN);
 		return;
 	}
 	else if(RRNdaRaiz() != buffer->indice[0].RRN){
 		RemocaoBufferPool(buffer, buffer->indice[0].RRN);
-		buffer->indice[0].pagina = CriaStruct(RRNdaRaiz());
+		buffer->indice[0].pagina = LeRegistroArvore(RRNdaRaiz());
 		return;
 	}	
 
@@ -66,7 +66,7 @@ void InsercaoBufferPool(BUFFER_POOL *buffer, int RRN){
 
 
 	buffer->indice[i].pagina = (REGISTRO_ARVORE*) malloc(sizeof(REGISTRO_ARVORE));
-	buffer->indice[i].pagina = CriaStruct(RRN);
+	buffer->indice[i].pagina = LeRegistroArvore(RRN);
 
 	return;
 }

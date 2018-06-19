@@ -12,7 +12,7 @@
 #include <arquivo.h>
 #include <bufferpool.h>
 
-#define QUANTIDADE_ARGUMENTOS {3, 2, 4, 3, 3, 8, 9, 2, 2}
+#define QUANTIDADE_ARGUMENTOS {3, 2, 4, 3, 3, 8, 9, 2, 2, 3, 8, 3, 3, 9}
 #define ERRO_GERAL "Falha no processamento do arquivo.\n"
 #define IMPRIME_ERRO_GERAL printf(ERRO_GERAL);
 #define ERRO_REGISTRO "Registro inexistente.\n"
@@ -618,12 +618,44 @@ int Funcionalidade9() { //função de recuperação dos RRNs logicamente removid
 	return ImprimeErro(retornoFuncao);
 }
 
+int Funcionalidade10(char* arquivoEntrada) { // Carrega o arquivo de dados e o arquivo de índices.
+	VETREGISTROS* vetRegistros = LeituraArquivoDeEntrada(arquivoEntrada);
+	CriaArquivoDeSaida(ARQUIVO_SAIDA);
+	int retornoFuncao = InsereVetorDeRegistros(ARQUIVO_SAIDA, vetRegistros);
+
+	AlteraStatusDoArquivo(ARQUIVO_SAIDA, 1);
+
+	if (retornoFuncao > 0) {
+		printf("Arquivo carregado.\n");
+		return 0;
+	}
+
+	printf("Falha no carregamento do arquivo.\n");
+	return 1;
+}
+
+int Funcionalidade11(char* valoresCampo[]) { // Insere um registro ao arquivo de dados e de índices.
+	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_SAIDA);
+
+	if (retornoFuncao > 0) {
+		REGISTRO* registro = InsereCamposEmRegistro(valoresCampo);
+
+		AlteraStatusDoArquivo(ARQUIVO_SAIDA, 0);
+		retornoFuncao = InsereRegistro(ARQUIVO_SAIDA, registro);
+		AlteraStatusDoArquivo(ARQUIVO_SAIDA, 1);
+
+		if (retornoFuncao > 0)
+			printf("Registro inserido com sucesso.\n");
+	}
+
+	return ImprimeErro(retornoFuncao);
+}
+
 int Funcionalidade12(char* chave) {
 	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
 
 	if (retornoFuncao > 0) {
-		
-		REGISTRO_ARVORE *reg = CriaStruct(RRNdaRaiz()); 
+		REGISTRO_ARVORE *reg = LeRegistroArvore(RRNdaRaiz()); 
 		retornoFuncao = BuscaArvoreB(reg, atoi(chave));
 
 		if(retornoFuncao > 0){
@@ -636,6 +668,16 @@ int Funcionalidade12(char* chave) {
 	return ImprimeErro(retornoFuncao);
 }
 
+int Funcionalidade13(char* chaveBusca) {
+	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
+
+	if (retornoFuncao > 0) {
+		
+	}
+
+	return ImprimeErro(retornoFuncao);
+}
+
 int Funcionalidade14(char* chave, char* valoresCampo[]){
 
 	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
@@ -643,7 +685,7 @@ int Funcionalidade14(char* chave, char* valoresCampo[]){
 	if (retornoFuncao > 0) {
 		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 0);
 
-		REGISTRO_ARVORE *reg = CriaStruct(RRNdaRaiz()); 
+		REGISTRO_ARVORE *reg = LeRegistroArvore(RRNdaRaiz()); 
 		retornoFuncao = BuscaArvoreB(reg, atoi(chave));
 		char str[12];
 		sprintf(str, "%d", retornoFuncao);
@@ -679,9 +721,9 @@ int main(int argc, char *argv[]){
 
 	// Vetor contendo quantos argumentos cada funcionalidade deve ter para ser executada
 	// corretamente.
-	int quantidadeArgumentos[9] = QUANTIDADE_ARGUMENTOS;
-	// Chama a função para conferir a quantidade de argumentos com base em qual é a funcionalidade
-	// a ser executada.
+	int quantidadeArgumentos[14] = QUANTIDADE_ARGUMENTOS;
+	// Chama a função para conferir a quantidade de argumentos com base em qual é a
+	// funcionalidade a ser executada.
 	ConfereEntrada(argc, quantidadeArgumentos[atoi(argv[1]) - 1]);
 
 	switch (atoi(argv[1])) {
@@ -703,8 +745,14 @@ int main(int argc, char *argv[]){
 			return Funcionalidade8();
 		case 9:
 			return Funcionalidade9();
+		case 10:
+			return Funcionalidade10(argv[2]);
+		case 11:
+			return Funcionalidade11(argv+2);
 		case 12:
 			return Funcionalidade12(argv[2]);
+		case 13:
+			return Funcionalidade13(argv[2]);
 		case 14:
 			return Funcionalidade14(argv[2], argv+3);
 		default:
