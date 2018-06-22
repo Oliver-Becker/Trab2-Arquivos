@@ -12,12 +12,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <arvoreb.h>
+#include <arquivo.h>
 
 #define TAMANHO_DATA 10
 #define TAMANHO_CABECALHO 5
 #define TAMANHO_REGISTRO 112
 #define BYTE_OFFSET(RRN) ((4 + TAMANHO_REGISTRO) * RRN) + TAMANHO_CABECALHO
+#define RRN_ATUAL(BYTEOFFSET) (BYTEOFFSET - TAMANHO_CABECALHO) / (4 + TAMANHO_REGISTRO)
 #define DATA_VAZIA "0000000000"
 #define CAMPO_VAZIO ""
 
@@ -34,7 +36,7 @@ typedef struct {
 } REGISTRO;
 
 REGISTRO* InsereCamposEmRegistro(char* campo[]);
-int AcrescentaRegistroNoFinal(char* nomeArquivo, REGISTRO* registro);
+int AcrescentaRegistroNoFinal(char* nomeArquivo, REGISTRO* registro, int indice);
 int ComparaCampoDoRegistro(REGISTRO* registro, char* nomeDoCampo, char* valor);
 void LiberaRegistro(REGISTRO* registro);
 int ImprimeRegistro(REGISTRO* registro);

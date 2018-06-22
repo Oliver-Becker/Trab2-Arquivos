@@ -26,6 +26,8 @@ void CriaArvoreB() {
 	fwrite(&ultimoRRN, sizeof(ultimoRRN), 1, fp);
 
 	fclose(fp);
+
+	ImprimeArquivoArvoreB();
 }
 
 void AlteraRRNdaRaiz(int RRN) {
@@ -169,6 +171,74 @@ REGISTRO_ARVORE* LeRegistroArvore(int RRN) {
 	return reg;
 }
 
+void AtualizaRegistroArvore(REGISTRO_ARVORE* registro, int RRNAtual) {
+
+	// atualiza o registro no bufferpool
+	InsereRegistroArvore(registro, RRNAtual);
+}
+
+// Função responsável por shiftar os índices de um nó para a direita, possibilitando a inserção de
+// uma nova chave de busca menor que estas a serem deslocadas, de modo a manter a ordenação do nó.
+// Isto deve ser feito ANTES de inserir a nova chave e, portanto, antes de incrementar a quantidade
+// de chaves existentes no nó (não verifica overflow).
+void DeslocaChavesParaDireita(REGISTRO_ARVORE* registro, int n) {
+	if (n < 0)
+		return;
+
+	for (int j = registro->quantidadeChaves; j > n; --j) {
+		registro->ponteiroSubarvore[j+1] = registro->ponteiroSubarvore[j];
+		registro->chaveBusca[j] = registro->chaveBusca[j-1];
+		registro->ponteiroDados[j] = registro->ponteiroDados[j-1];
+	}
+}
+
+// Função responsável por inserir uma nova chave de busca em um nó da árvore B. Não trata dos casos
+// de overflow, e só deve ser chamada após conferir se o nó não está cheio.
+int InsereChaveNoIndice(REGISTRO_ARVORE* registro, int subarvore, int RRNAtual, int chaveBusca, 
+			int RRNRegistroDeDados) {
+	if (registro == NULL)
+		return -1;
+
+	int i = 0;
+
+	// Procura o lugar em que a chave deve ser inserida, de modo a manter o registro ordenado.
+	while (i < registro->quantidadeChaves && chaveBusca > registro->chaveBusca[i]) ++i;
+
+	if (chaveBusca == registro->chaveBusca[i]) // Caso a chave a ser inserida já exista.
+		return 0;
+
+	DeslocaChavesParaDireita(registro, i);	// Abre espaço para inserir uma nova chave.
+
+	registro->quantidadeChaves++;
+	registro->ponteiroSubarvore[i+1] = subarvore;
+	registro->chaveBusca[i] = chaveBusca;
+	registro->ponteiroDados[i] = RRNRegistroDeDados;
+
+	AtualizaRegistroArvore(registro, RRNAtual);
+
+	return 1;
+}
+
+// Função recursiva para encontrar o nó folha que a chave deve ser inserida.
+int BuscaOndeInserir(REGISTRO_ARVORE* registro, int chaveBusca, int RRNRegistroDeDados,
+			int RRNAtual, int alturaAtual) {
+	if (registro == NULL)
+		return -1;
+
+	if (alturaAtual == 0) {	// Quando chegar a um nó folha, pode inserir.
+		// Caso ainda tenha espaço para mais chaves no nó atual.
+		if (registro->quantidadeChaves < ORDEM_DA_ARVORE-1) {
+			printf("Inserindo chave no índice sem overflow.\n");
+			return InsereChaveNoIndice(registro, -1, RRNAtual, chaveBusca,
+							 RRNRegistroDeDados);
+		}
+
+		printf("OVERFLOW!!\n");
+		// Senão, faz um split.
+		
+	}
+}
+
 int InsereIndice(int chaveBusca, int RRNRegistroDeDados) {
 
 /*	FILE* fp = fopen(ARQUIVO_ARVORE, "rb");
@@ -199,12 +269,16 @@ int InsereIndice(int chaveBusca, int RRNRegistroDeDados) {
 		InsereRegistroArvore(registro, 0);
 		
 		free(registro);
+		ImprimeArquivoArvoreB();
 		return 0;	// Finaliza a inserção, sem erros.
 	}
 
-	//registro = LeRegistroArvore(raiz);
+	registro = LeRegistroArvore(raiz);
+	BuscaOndeInserir(registro, chaveBusca, RRNRegistroDeDados, raiz, AlturaDaArvore());
 
 
+
+	ImprimeArquivoArvoreB();
 
 
 	return 0;
@@ -229,4 +303,51 @@ int BuscaArvoreB(REGISTRO_ARVORE *reg, int chave){
 	int filho = reg->ponteiroSubarvore[i];
 	free(reg);
 	return BuscaArvoreB(LeRegistroArvore(filho), chave);
+}
+
+void ImprimeRegistroArvore(REGISTRO_ARVORE* reg) {
+	printf("n=%d  ", reg->quantidadeChaves);
+
+	for(int i = 0; i < ORDEM_DA_ARVORE-1; i++){
+		printf("|%d| ", reg->ponteiroSubarvore[i]);
+		printf("|%d|", reg->chaveBusca[i]);
+		printf("%d| ", reg->ponteiroDados[i]);
+	}
+
+	printf("|%d|\n", reg->ponteiroSubarvore[ORDEM_DA_ARVORE-1]);
+}
+
+void ImprimeArquivoArvoreB() {
+	printf("\n==========Arquivo árvore B.==========\n");
+	FILE* fp = fopen(ARQUIVO_ARVORE, "rb");
+	if (fp == NULL) {
+		printf("ERRO! Arquivo de árvore B não existe.\n");
+		return;
+	}
+
+	char status;
+	int noRaiz, altura, ultimoRRN;
+
+	fread(&status, sizeof(char), 1, fp);
+	fread(&noRaiz, sizeof(int), 1, fp);
+	fread(&altura, sizeof(int), 1, fp);
+	fread(&ultimoRRN, sizeof(int), 1, fp);
+
+	printf("Registro de cabeçalho:\tstatus: %d, noRaiz: %d, altura: %d, ultimoRRN: %d\n", 
+		status, noRaiz, altura, ultimoRRN);
+
+	fclose(fp);
+
+	REGISTRO_ARVORE* reg;
+	int i = 0;
+	while (i <= ultimoRRN) {
+		printf("Registro %d: ", i);
+		// reg = RecuperaRegistroArvore(i);
+		reg = LeRegistroArvore(i);
+		ImprimeRegistroArvore(reg);
+		free(reg);
+		i++;
+	}
+
+	printf("\n");
 }

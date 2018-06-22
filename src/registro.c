@@ -18,27 +18,45 @@ REGISTRO* InsereCamposEmRegistro(char* campo[]) {
 	strcpy(registro->dataFinal, (strcmp(campo[2], "0") ? campo[2] : DATA_VAZIA));
 
 	registro->tamNome = strlen(campo[3]);
-	registro->nomeEscola = (char*) malloc(sizeof(char) * registro->tamNome);
-	strcpy(registro->nomeEscola, campo[3]);
+	if (registro->tamNome > 0) {
+		registro->nomeEscola = (char*) malloc(sizeof(char) * registro->tamNome);
+		strcpy(registro->nomeEscola, campo[3]);
+	} else {
+		registro->nomeEscola = CAMPO_VAZIO;
+	}
 
 	registro->tamMunicipio = strlen(campo[4]);
-	registro->municipio = (char*) malloc(sizeof(char) * registro->tamMunicipio);
-	strcpy(registro->municipio, campo[4]);
+	if (registro->tamMunicipio > 0) {
+		registro->municipio = (char*) malloc(sizeof(char) * registro->tamMunicipio);
+		strcpy(registro->municipio, campo[4]);
+	} else {
+		registro->municipio = CAMPO_VAZIO;
+	}
 
 	registro->tamEndereco = strlen(campo[5]);
-	registro->endereco = (char*) malloc(sizeof(char) * registro->tamEndereco);
-	strcpy(registro->endereco, campo[5]);
+	if (registro->tamEndereco > 0) {
+		registro->endereco = (char*) malloc(sizeof(char) * registro->tamEndereco);
+		strcpy(registro->endereco, campo[5]);
+	} else {
+		registro->endereco = CAMPO_VAZIO;
+	}
 
 	return registro;
 }
 
-int AcrescentaRegistroNoFinal(char* nomeArquivo, REGISTRO* registro) {
+int AcrescentaRegistroNoFinal(char* nomeArquivo, REGISTRO* registro, int indice) {
 	if (nomeArquivo == NULL || registro == NULL)
 		return 0;
 
 	FILE* fp = fopen(nomeArquivo, "ab+");
 	if (fp == NULL)
 		return 0;
+
+	fseek(fp, 0, SEEK_END);
+	printf("ftell: %d, RRN_ATUAL: %d\n", ftell(fp), RRN_ATUAL(ftell(fp)));
+
+	int RRN = RRN_ATUAL(ftell(fp));	// Descobre o RRN do registro com base no byte offset atual.
+
 	int registroExiste = 0;
 
 	fwrite(&registroExiste, sizeof(int), 1, fp);
@@ -58,9 +76,19 @@ int AcrescentaRegistroNoFinal(char* nomeArquivo, REGISTRO* registro) {
 	char* finalDoRegistro = (char*)malloc(sizeof(char) * bytesRestantes);
 	fwrite(finalDoRegistro, sizeof(char), bytesRestantes, fp);
 
-	free(finalDoRegistro);
 	fclose(fp);
-	return 1;
+
+	int retorno = 1;
+
+	if (indice) {
+		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 0);
+		int retorno = InsereIndice(registro->codEscola, RRN);
+		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 1);
+	}
+
+	free(finalDoRegistro);
+
+	return retorno;
 }
 
 int ComparaCampoDoRegistro(REGISTRO* registro, char* nomeDoCampo, char* valor) {

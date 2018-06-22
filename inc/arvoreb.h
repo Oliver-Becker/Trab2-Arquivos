@@ -37,5 +37,7 @@ int UltimoRRN();
 int InsereIndice(int chave, int RRN);
 REGISTRO_ARVORE* LeRegistroArvore(int);
 int BuscaArvoreB(REGISTRO_ARVORE*, int);
+void ImprimeRegistroArvore(REGISTRO_ARVORE*);
+void ImprimeArquivoArvoreB();
 
 #endif

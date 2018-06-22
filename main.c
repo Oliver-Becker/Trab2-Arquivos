@@ -14,9 +14,7 @@
 
 #define QUANTIDADE_ARGUMENTOS {3, 2, 4, 3, 3, 8, 9, 2, 2, 3, 8, 3, 3, 9}
 #define ERRO_GERAL "Falha no processamento do arquivo.\n"
-#define IMPRIME_ERRO_GERAL printf(ERRO_GERAL);
 #define ERRO_REGISTRO "Registro inexistente.\n"
-#define IMPRIME_ERRO_REGISTRO printf(ERRO_REGISTRO);
 #define ARQUIVO_SAIDA "saida.bin"
 #define ARQUIVO_DESFRAGMENTADO "desfragmentacao.bin"
 #define ARQUIVO_BUFFER "buffer-info.text"
@@ -26,7 +24,7 @@ typedef struct {
 	int numElementos;
 } VETREGISTROS;
 
-int SubstituiRegistro(char* nomeArquivo, REGISTRO* registro, int RRN) {
+int SubstituiRegistro(char* nomeArquivo, REGISTRO* registro, int RRN, int indice) {
 	
 	if (nomeArquivo == NULL || registro == NULL)
 		return 0; //verifica se o nome do arquivo e o regitro são válidos
@@ -66,10 +64,18 @@ int SubstituiRegistro(char* nomeArquivo, REGISTRO* registro, int RRN) {
 
 	fclose(fp);
 
-	return 1;
+	int retorno = 1;
+
+	if (indice) {
+		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 0);
+		int retorno = InsereIndice(registro->codEscola, RRN);
+		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 1);
+	}
+
+	return retorno;
 }
 
-int InsereRegistro(char* nomeArquivo, REGISTRO* registro) {
+int InsereRegistro(char* nomeArquivo, REGISTRO* registro, int indice) {
 	
 	if (nomeArquivo == NULL || registro == NULL) //verifica se o nome do arquivo e o registro são válidos
 		return 0;
@@ -85,10 +91,10 @@ int InsereRegistro(char* nomeArquivo, REGISTRO* registro) {
 
 	fclose(fp);
 
-	//decide de registro vai substituir algum registro removido
+	//decide se registro vai substituir algum registro removido
 	//ou se deve ser inserido no final
-	return (topoPilha == -1) ? AcrescentaRegistroNoFinal(nomeArquivo, registro) : 
-		SubstituiRegistro(nomeArquivo, registro, topoPilha);
+	return (topoPilha == -1) ? AcrescentaRegistroNoFinal(nomeArquivo, registro, indice) : 
+		SubstituiRegistro(nomeArquivo, registro, topoPilha, indice);
 }
 
 void LiberaVetorDeRegistros(VETREGISTROS* vetRegistros) {
@@ -105,7 +111,7 @@ void LiberaVetorDeRegistros(VETREGISTROS* vetRegistros) {
 	vetRegistros = NULL;
 }
 
-int InsereVetorDeRegistros(char* nomeArquivo, VETREGISTROS* vetRegistros) {
+int InsereVetorDeRegistros(char* nomeArquivo, VETREGISTROS* vetRegistros, int indice) {
 	
 	if (nomeArquivo == NULL || vetRegistros == NULL)
 		return 0; //verifica se o nome do arquivo e o vetRegsitros são válidos 
@@ -116,7 +122,7 @@ int InsereVetorDeRegistros(char* nomeArquivo, VETREGISTROS* vetRegistros) {
 	AlteraStatusDoArquivo(ARQUIVO_SAIDA, 0); //altera o status do arquivo para 0
 
 	for (int i = 0; i < vetRegistros->numElementos; ++i) //insere os regitros no arquivo desejado
-		InsereRegistro(nomeArquivo, vetRegistros->registro[i]);
+		InsereRegistro(nomeArquivo, vetRegistros->registro[i], indice);
 
 	LiberaVetorDeRegistros(vetRegistros); //libera o vetor vetRegistros
 
@@ -386,14 +392,14 @@ int AtualizaRegistroPorRRN(REGISTRO* registro, int RRN) {
 	if (registroExiste < 0) //retorna erro caso o registro já tenha sido removido
 		return -1;
 
-	return SubstituiRegistro(ARQUIVO_SAIDA, registro, RRN); //substitui o regitro caso esteja tudo certo
+	return SubstituiRegistro(ARQUIVO_SAIDA, registro, RRN, 0); //substitui o regitro caso esteja tudo certo
 }
 
 int DesfragmentaArquivoDeDados() {
 
 	CriaArquivoDeSaida(ARQUIVO_DESFRAGMENTADO); //cria um novo arquivo de saíd
 	VETREGISTROS* vetRegistros = RecuperaTodosRegistros(); //recupera todos os registros existentes e armazena
-	InsereVetorDeRegistros(ARQUIVO_DESFRAGMENTADO, vetRegistros); //em um vetor para ser inserido no novo arquivo
+	InsereVetorDeRegistros(ARQUIVO_DESFRAGMENTADO, vetRegistros, 0); //em um vetor para ser inserido no novo arquivo
 	if (remove(ARQUIVO_SAIDA))		// Remove o antigo arquivo de saída.
 		return 0;
 	if (rename(ARQUIVO_DESFRAGMENTADO, ARQUIVO_SAIDA))	// Muda o nome do novo arquivo para 'saida.bin'
@@ -444,7 +450,7 @@ int* RecuperaRRNLogicamenteRemovidos() {
 	return vet; //retorna o vetor com os resultados encontrados
 }
 
-int ImpremeVetorDeRegistros(VETREGISTROS *vetRegistros) {
+int ImprimeVetorDeRegistros(VETREGISTROS *vetRegistros) {
 	
 	if(vetRegistros == NULL)		//caso algum erro foi encontrado
 		return 0;
@@ -481,10 +487,10 @@ int ImprimeErro(int erro) { //verifica qual é o retorno da função e imprime s
 			printf("Pilha vazia.\n");
 			return 3;
 		case -1:
-			IMPRIME_ERRO_REGISTRO
+			printf(ERRO_REGISTRO);
 			return 2;
 		case 0:
-			IMPRIME_ERRO_GERAL
+			printf(ERRO_GERAL);
 			return 1;
 		default:
 			return 0;
@@ -494,7 +500,7 @@ int ImprimeErro(int erro) { //verifica qual é o retorno da função e imprime s
 int Funcionalidade1(char* arquivoEntrada) { //função de leitura dos registros
 	VETREGISTROS* vetRegistros = LeituraArquivoDeEntrada(arquivoEntrada);
 	CriaArquivoDeSaida(ARQUIVO_SAIDA);
-	int retornoFuncao = InsereVetorDeRegistros(ARQUIVO_SAIDA, vetRegistros);
+	int retornoFuncao = InsereVetorDeRegistros(ARQUIVO_SAIDA, vetRegistros, 0);
 
 	AlteraStatusDoArquivo(ARQUIVO_SAIDA, 1);
 
@@ -513,7 +519,8 @@ int Funcionalidade2() { //função que recupera todos os registros
 	if (retornoFuncao > 0) {
 		VETREGISTROS* vetRegistros = RecuperaTodosRegistros();
 
-		retornoFuncao = ImpremeVetorDeRegistros(vetRegistros);
+		retornoFuncao = ImprimeVetorDeRegistros(vetRegistros);
+		ImprimeArquivoArvoreB();
 	}
 
 	return ImprimeErro(retornoFuncao); 
@@ -525,7 +532,7 @@ int Funcionalidade3(char* nomeDoCampo, char* valor) { //função que recupera re
 	if (retornoFuncao > 0) {
 		VETREGISTROS* vetRegistros = RecuperaRegistrosPorCampo(nomeDoCampo, valor);
 
-		retornoFuncao = ImpremeVetorDeRegistros(vetRegistros);
+		retornoFuncao = ImprimeVetorDeRegistros(vetRegistros);
 	}
 
 	return ImprimeErro(retornoFuncao); 
@@ -565,8 +572,10 @@ int Funcionalidade6(char* valoresCampo[]) {//função de inserção lógica dos 
 		REGISTRO* registro = InsereCamposEmRegistro(valoresCampo);
 
 		AlteraStatusDoArquivo(ARQUIVO_SAIDA, 0);
-		retornoFuncao = InsereRegistro(ARQUIVO_SAIDA, registro);
+		retornoFuncao = InsereRegistro(ARQUIVO_SAIDA, registro, 0);
 		AlteraStatusDoArquivo(ARQUIVO_SAIDA, 1);
+
+		LiberaRegistro(registro);
 
 		if (retornoFuncao > 0)
 			printf("Registro inserido com sucesso.\n");
@@ -584,6 +593,8 @@ int Funcionalidade7(char* RRN, char* valoresCampo[]) { //função de atualizaç�
 		AlteraStatusDoArquivo(ARQUIVO_SAIDA, 0);
 		retornoFuncao = AtualizaRegistroPorRRN(registro, atoi(RRN));
 		AlteraStatusDoArquivo(ARQUIVO_SAIDA, 1);
+
+		LiberaRegistro(registro);
 
 		if (retornoFuncao > 0)
 			printf("Registro alterado com sucesso.\n");
@@ -620,10 +631,14 @@ int Funcionalidade9() { //função de recuperação dos RRNs logicamente removid
 
 int Funcionalidade10(char* arquivoEntrada) { // Carrega o arquivo de dados e o arquivo de índices.
 	VETREGISTROS* vetRegistros = LeituraArquivoDeEntrada(arquivoEntrada);
-	CriaArquivoDeSaida(ARQUIVO_SAIDA);
-	int retornoFuncao = InsereVetorDeRegistros(ARQUIVO_SAIDA, vetRegistros);
+
+	CriaArquivoDeSaida(ARQUIVO_SAIDA);	// Cria arquivo de dados.
+	CriaArvoreB();				// Cria arquivo de índice.
+
+	int retornoFuncao = InsereVetorDeRegistros(ARQUIVO_SAIDA, vetRegistros, 0);
 
 	AlteraStatusDoArquivo(ARQUIVO_SAIDA, 1);
+	AlteraStatusDoArquivo(ARQUIVO_ARVORE, 1);
 
 	if (retornoFuncao > 0) {
 		printf("Arquivo carregado.\n");
@@ -634,15 +649,25 @@ int Funcionalidade10(char* arquivoEntrada) { // Carrega o arquivo de dados e o a
 	return 1;
 }
 
-int Funcionalidade11(char* valoresCampo[]) { // Insere um registro ao arquivo de dados e de índices.
+int Funcionalidade11(char* valoresCampo[]) { // Insere registro aos arquivos de dados e de índices.
 	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_SAIDA);
+	if (retornoFuncao > 0)
+		retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
 
 	if (retornoFuncao > 0) {
 		REGISTRO* registro = InsereCamposEmRegistro(valoresCampo);
 
 		AlteraStatusDoArquivo(ARQUIVO_SAIDA, 0);
-		retornoFuncao = InsereRegistro(ARQUIVO_SAIDA, registro);
+		retornoFuncao = InsereRegistro(ARQUIVO_SAIDA, registro, 1);
 		AlteraStatusDoArquivo(ARQUIVO_SAIDA, 1);
+
+	/*	if (retornoFuncao > 0) {
+			AlteraStatusDoArquivo(ARQUIVO_ARVORE, 0);
+			//retornoFuncao = InsereIndice(registro->codEscola, );
+			AlteraStatusDoArquivo(ARQUIVO_ARVORE, 1);
+		}
+*/
+		LiberaRegistro(registro);
 
 		if (retornoFuncao > 0)
 			printf("Registro inserido com sucesso.\n");
@@ -651,8 +676,12 @@ int Funcionalidade11(char* valoresCampo[]) { // Insere um registro ao arquivo de
 	return ImprimeErro(retornoFuncao);
 }
 
+// Busca um registro do arquivo de dados a partir de uma chave de busca, utilizando o índice montado
+// em árvore B.
 int Funcionalidade12(char* chave) {
 	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
+	if (retornoFuncao > 0)
+		retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
 
 	if (retornoFuncao > 0) {
 		REGISTRO_ARVORE *reg = LeRegistroArvore(RRNdaRaiz()); 
@@ -668,19 +697,28 @@ int Funcionalidade12(char* chave) {
 	return ImprimeErro(retornoFuncao);
 }
 
-int Funcionalidade13(char* chaveBusca) {
+int Funcionalidade13(char* chaveBusca) { // Remove um registro dos arquivos de dados e de índices.
 	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
+	if (retornoFuncao > 0)
+		retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
 
 	if (retornoFuncao > 0) {
+		AlteraStatusDoArquivo(ARQUIVO_SAIDA, 0);
+		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 0);
 		
+		AlteraStatusDoArquivo(ARQUIVO_SAIDA, 1);
+		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 1);
 	}
 
 	return ImprimeErro(retornoFuncao);
 }
 
+// Atualiza um registro do arquivo de dados a partir de uma chave de busca.
 int Funcionalidade14(char* chave, char* valoresCampo[]){
 
 	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
+	if (retornoFuncao > 0)
+		retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
 
 	if (retornoFuncao > 0) {
 		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 0);
@@ -714,7 +752,7 @@ void ConfereEntrada(int argc, int valorEsperado) {
 
 int main(int argc, char *argv[]){
 
-	if (argc < 2 || atoi(argv[1]) < 1 || atoi(argv[1]) > 9) {
+	if (argc < 2 || atoi(argv[1]) < 1 || atoi(argv[1]) > 14) {
 		printf(ERRO_GERAL); //verifica se os argumentos da entrada são válidos
 		return -1;
 	}
