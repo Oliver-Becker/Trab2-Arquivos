@@ -320,13 +320,13 @@ int BuscaOndeInserir(REGISTRO_ARVORE* registro, int* chaveBusca, int* campoRefer
 
 	if (alturaAtual > 0) { // Caso ainda não tenha chego em um nó folha.
 		int i = 0;
-		while (i < registro->quantidadeChaves && *chaveBusca < registro->chaveBusca[i]) i++;
+		while (i < registro->quantidadeChaves && *chaveBusca > registro->chaveBusca[i]) i++;
 
 		int RRNFilho = registro->ponteiroSubarvore[i];
 
 		REGISTRO_ARVORE* filho = LeRegistroArvore(RRNFilho);
-		retornoFuncao = BuscaOndeInserir(filho, chaveBusca, campoReferencia, RRNAtual,
-							alturaAtual);
+		retornoFuncao = BuscaOndeInserir(filho, chaveBusca, campoReferencia, RRNFilho,
+							alturaAtual-1);
 
 		if (retornoFuncao != 1) { // Caso não tenha acontecido um split, encerra a função.
 			free(registro);
