@@ -53,8 +53,6 @@ int AcrescentaRegistroNoFinal(char* nomeArquivo, REGISTRO* registro, int indice)
 		return 0;
 
 	fseek(fp, 0, SEEK_END);
-	printf("ftell: %d, RRN_ATUAL: %d\n", ftell(fp), RRN_ATUAL(ftell(fp)));
-
 	int RRN = RRN_ATUAL(ftell(fp));	// Descobre o RRN do registro com base no byte offset atual.
 
 	int registroExiste = 0;

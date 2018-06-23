@@ -117,9 +117,9 @@ int UltimoRRN() {
 REGISTRO_ARVORE* CriaRegistroArvore() {
 	REGISTRO_ARVORE* registro = (REGISTRO_ARVORE*)malloc(sizeof(REGISTRO_ARVORE));
 	registro->quantidadeChaves = 0;
-	memset(registro->ponteiroSubarvore, -1, sizeof(int) * ORDEM_DA_ARVORE);
-	memset(registro->chaveBusca, -1, sizeof(int) * (ORDEM_DA_ARVORE - 1));
-	memset(registro->ponteiroDados, -1, sizeof(int) * (ORDEM_DA_ARVORE - 1));
+	memset(registro->ponteiroSubarvore, -1, sizeof(int) * (ORDEM_DA_ARVORE + 1));
+	memset(registro->chaveBusca, -1, sizeof(int) * (ORDEM_DA_ARVORE));
+	memset(registro->ponteiroDados, -1, sizeof(int) * (ORDEM_DA_ARVORE));
 
 	return registro;
 }
@@ -174,13 +174,12 @@ REGISTRO_ARVORE* LeRegistroArvore(int RRN) {
 void AtualizaRegistroArvore(REGISTRO_ARVORE* registro, int RRNAtual) {
 
 	// atualiza o registro no bufferpool
+
 	InsereRegistroArvore(registro, RRNAtual);
 }
 
 // Função responsável por shiftar os índices de um nó para a direita, possibilitando a inserção de
 // uma nova chave de busca menor que estas a serem deslocadas, de modo a manter a ordenação do nó.
-// Isto deve ser feito ANTES de inserir a nova chave e, portanto, antes de incrementar a quantidade
-// de chaves existentes no nó (não verifica overflow).
 void DeslocaChavesParaDireita(REGISTRO_ARVORE* registro, int n) {
 	if (n < 0)
 		return;
@@ -194,8 +193,8 @@ void DeslocaChavesParaDireita(REGISTRO_ARVORE* registro, int n) {
 
 // Função responsável por inserir uma nova chave de busca em um nó da árvore B. Não trata dos casos
 // de overflow, e só deve ser chamada após conferir se o nó não está cheio.
-int InsereChaveNoIndice(REGISTRO_ARVORE* registro, int subarvore, int RRNAtual, int chaveBusca, 
-			int RRNRegistroDeDados) {
+int InsereChaveNoIndice(REGISTRO_ARVORE* registro, int subarvore, int chaveBusca, 
+			int campoReferencia) {
 	if (registro == NULL)
 		return -1;
 
@@ -212,34 +211,162 @@ int InsereChaveNoIndice(REGISTRO_ARVORE* registro, int subarvore, int RRNAtual, 
 	registro->quantidadeChaves++;
 	registro->ponteiroSubarvore[i+1] = subarvore;
 	registro->chaveBusca[i] = chaveBusca;
-	registro->ponteiroDados[i] = RRNRegistroDeDados;
+	registro->ponteiroDados[i] = campoReferencia;
 
-	AtualizaRegistroArvore(registro, RRNAtual);
+	return 1;
+}
+
+// Transfere 'n' índices de um registro para outro, possibilitando a execução de um split.
+void MoveChavesDeRegistro(REGISTRO_ARVORE* origem, REGISTRO_ARVORE* destino, int n) {
+	if (origem == NULL || destino == NULL)
+		return;
+
+	int i;
+	int inicio = destino->quantidadeChaves;
+	if ((inicio + n) > (ORDEM_DA_ARVORE - 1)) // Caso não caibam todas as chaves no destino
+		return;
+
+	for (i = n; i < origem->quantidadeChaves; ++i) {
+		destino->ponteiroSubarvore[inicio + (i-n)] = origem->ponteiroSubarvore[i];
+		destino->chaveBusca[inicio + (i-n)] = origem->chaveBusca[i];
+		destino->ponteiroDados[inicio + (i-n)] = origem->ponteiroDados[i];
+
+		origem->ponteiroSubarvore[i] = -1;
+		origem->chaveBusca[i] = -1;
+		origem->ponteiroDados[i] = -1;
+	}
+	destino->ponteiroSubarvore[inicio + (i-n)] = origem->ponteiroSubarvore[i];
+	origem->ponteiroSubarvore[i] = -1;
+
+	destino->quantidadeChaves += i-n;
+	origem->quantidadeChaves -= i-n;
+}
+
+// Realiza o split 1 pra 2, criando um novo registro que guardará metade dos índices a sofrer split
+// e retornando a chave que irá 'subir', utilizando argumentos por referência.
+int Split1Pra2(REGISTRO_ARVORE* registro, int* chaveBusca, int* campoReferencia) {
+	if (registro == NULL)
+		return -1;
+
+	int RRNnovoRegistro = UltimoRRN();	// Descobre qual foi o último RRN utilizado.
+
+	// Confere se o nó atual é uma folha ou não ao conferir se o primeiro ponteiro pra subarvore
+	// é -1. Caso seja nó folha, o ponteiro do novo nó será -1, senão será o do último RRN lido.
+	InsereChaveNoIndice(registro, (registro->ponteiroSubarvore[0] == -1) ? -1 : RRNnovoRegistro,
+				 *chaveBusca, *campoReferencia);
+
+	// Cria o novo registro que armazenará metade das chaves do registro que sofreu o split.
+	REGISTRO_ARVORE* novoRegistro = CriaRegistroArvore();
+
+	int meio = ORDEM_DA_ARVORE / 2;
+
+	printf("meio = %d\n", meio);
+
+	// Coloca a metade da direita no registro novo.
+	MoveChavesDeRegistro(registro, novoRegistro, meio + 1);
+
+	// Atribui o valor da chave do meio para os argumentos, pois ela será promovida.
+	*chaveBusca = registro->chaveBusca[meio];
+	*campoReferencia = registro->ponteiroDados[meio];
+
+	// Limpa o conteúdo de memória da posição do meio do antigo registro (chave foi promovida).
+	registro->chaveBusca[meio] = -1;
+	registro->ponteiroDados[meio] = -1;
+	registro->quantidadeChaves--;
+
+	AlteraUltimoRRN(++RRNnovoRegistro);	// Escreve o RRN do novo registro no cabeçalho.
+
+	AtualizaRegistroArvore(novoRegistro, RRNnovoRegistro);
+
+	free(novoRegistro);
+	return RRNnovoRegistro;
+}
+
+// Função para tratar o caso de overflow no nó raíz, realizando um split e alterando o nó raíz do
+// registro de cabeçalho.
+int SplitNoRaiz(REGISTRO_ARVORE* registro, int chaveBusca, int campoReferencia) {
+	if (registro == NULL)
+		return -1;
+
+	int RRNnovoRegistro = Split1Pra2(registro, &chaveBusca, &campoReferencia);
+
+	REGISTRO_ARVORE* novaRaiz = CriaRegistroArvore();
+
+	novaRaiz->quantidadeChaves++;
+	novaRaiz->ponteiroSubarvore[0] = RRNdaRaiz();
+	novaRaiz->chaveBusca[0] = chaveBusca;
+	novaRaiz->ponteiroDados[0] = campoReferencia;
+	novaRaiz->ponteiroSubarvore[1] = RRNnovoRegistro;
+
+	int RRNraiz = RRNnovoRegistro + 1;
+
+	AlteraRRNdaRaiz(RRNraiz);
+	AlteraUltimoRRN(RRNraiz);
+	AlteraAlturaDaArvore(AlturaDaArvore()+1);
+
+	AtualizaRegistroArvore(novaRaiz, RRNraiz);
+	free(novaRaiz);
 
 	return 1;
 }
 
 // Função recursiva para encontrar o nó folha que a chave deve ser inserida.
-int BuscaOndeInserir(REGISTRO_ARVORE* registro, int chaveBusca, int RRNRegistroDeDados,
+int BuscaOndeInserir(REGISTRO_ARVORE* registro, int* chaveBusca, int* campoReferencia,
 			int RRNAtual, int alturaAtual) {
 	if (registro == NULL)
 		return -1;
+
+	int retornoFuncao = 0;
+
+	if (alturaAtual > 0) { // Caso ainda não tenha chego em um nó folha.
+		int i = 0;
+		while (i < registro->quantidadeChaves && *chaveBusca < registro->chaveBusca[i]) i++;
+
+		int RRNFilho = registro->ponteiroSubarvore[i];
+
+		REGISTRO_ARVORE* filho = LeRegistroArvore(RRNFilho);
+		retornoFuncao = BuscaOndeInserir(filho, chaveBusca, campoReferencia, RRNAtual,
+							alturaAtual);
+
+		if (retornoFuncao != 1) { // Caso não tenha acontecido um split, encerra a função.
+			free(registro);
+			return 0;
+		}
+
+		// Se a função retornou 1, é porque houve split e deve-se inserir uma chave no 
+		// registro atual.
+		
+	}
 
 	if (alturaAtual == 0) {	// Quando chegar a um nó folha, pode inserir.
 		// Caso ainda tenha espaço para mais chaves no nó atual.
 		if (registro->quantidadeChaves < ORDEM_DA_ARVORE-1) {
 			printf("Inserindo chave no índice sem overflow.\n");
-			return InsereChaveNoIndice(registro, -1, RRNAtual, chaveBusca,
-							 RRNRegistroDeDados);
+
+			retornoFuncao = InsereChaveNoIndice(registro, -1, *chaveBusca,
+							 *campoReferencia);
+
+			AtualizaRegistroArvore(registro, RRNAtual);
+
+			free(registro);
+			return 0;
 		}
 
 		printf("OVERFLOW!!\n");
 		// Senão, faz um split.
+		if (RRNAtual == RRNdaRaiz()) {	// Caso haja um overflow na raíz.
+			retornoFuncao = SplitNoRaiz(registro, *chaveBusca, *campoReferencia);
+
+			AtualizaRegistroArvore(registro, RRNAtual);
+
+			free(registro);
+			return 0;
+		}
 		
 	}
 }
 
-int InsereIndice(int chaveBusca, int RRNRegistroDeDados) {
+int InsereIndice(int chaveBusca, int campoReferencia) {
 
 /*	FILE* fp = fopen(ARQUIVO_ARVORE, "rb");
 	if (fp == NULL)
@@ -263,7 +390,7 @@ int InsereIndice(int chaveBusca, int RRNRegistroDeDados) {
 		// Insere o índice no registro (como é um nó folha, não terá ponteiros de filho).
 		registro->quantidadeChaves = 1;
 		registro->chaveBusca[0] = chaveBusca;
-		registro->ponteiroDados[0] = RRNRegistroDeDados;
+		registro->ponteiroDados[0] = campoReferencia;
 
 		// Por fim, escreve o novo registro no arquivo de índice.
 		InsereRegistroArvore(registro, 0);
@@ -274,7 +401,7 @@ int InsereIndice(int chaveBusca, int RRNRegistroDeDados) {
 	}
 
 	registro = LeRegistroArvore(raiz);
-	BuscaOndeInserir(registro, chaveBusca, RRNRegistroDeDados, raiz, AlturaDaArvore());
+	BuscaOndeInserir(registro, &chaveBusca, &campoReferencia, raiz, AlturaDaArvore());
 
 
 

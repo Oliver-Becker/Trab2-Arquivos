@@ -17,15 +17,15 @@
 #define CABECALHO_ARVORE 13
 #define TAMANHO_PAGINA 116
 #define BYTE_OFFSET_ARVORE(RRN) (TAMANHO_PAGINA * (RRN)) + CABECALHO_ARVORE
-#define ORDEM_DA_ARVORE 10 	// ordem 'm' = 10
+#define ORDEM_DA_ARVORE 10 				// Ordem 'm' = 10.
 #define ARQUIVO_ARVORE "indice.bin"
 
 typedef struct {
-	int quantidadeChaves;			// 'n'
-	int ponteiroSubarvore[ORDEM_DA_ARVORE];	// 'P'
-	int chaveBusca[ORDEM_DA_ARVORE-1];	// 'C'
-	int ponteiroDados[ORDEM_DA_ARVORE-1];	// 'Pr'
-} REGISTRO_ARVORE;	
+	int quantidadeChaves;				// 'n'
+	int ponteiroSubarvore[ORDEM_DA_ARVORE+1];	// 'P'  Foi adicionada uma posição a mais em
+	int chaveBusca[ORDEM_DA_ARVORE];		// 'C'  cada vetor apenas para a implementa-
+	int ponteiroDados[ORDEM_DA_ARVORE];		// 'Pr' ção do split, mas estas nunca serão
+} REGISTRO_ARVORE;					//	mostradas no arquivo de índices.
 
 void CriaArvoreB();
 void AlteraRRNdaRaiz(int RRN);
