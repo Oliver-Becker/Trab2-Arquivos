@@ -338,32 +338,42 @@ int BuscaOndeInserir(REGISTRO_ARVORE* registro, int* chaveBusca, int* campoRefer
 		
 	}
 
-	if (alturaAtual == 0) {	// Quando chegar a um nó folha, pode inserir.
+	//if (alturaAtual == 0) {	// Quando chegar a um nó folha, pode inserir.
 		// Caso ainda tenha espaço para mais chaves no nó atual.
-		if (registro->quantidadeChaves < ORDEM_DA_ARVORE-1) {
-			printf("Inserindo chave no índice sem overflow.\n");
+	if (registro->quantidadeChaves < ORDEM_DA_ARVORE-1) {
+		printf("Inserindo chave no índice sem overflow.\n");
 
-			retornoFuncao = InsereChaveNoIndice(registro, -1, *chaveBusca,
-							 *campoReferencia);
+		int ponteiro = alturaAtual ? UltimoRRN() : -1;
 
-			AtualizaRegistroArvore(registro, RRNAtual);
+		retornoFuncao = InsereChaveNoIndice(registro, ponteiro, *chaveBusca,
+				*campoReferencia);
 
-			free(registro);
-			return 0;
-		}
+		AtualizaRegistroArvore(registro, RRNAtual);
 
-		printf("OVERFLOW!!\n");
-		// Senão, faz um split.
-		if (RRNAtual == RRNdaRaiz()) {	// Caso haja um overflow na raíz.
-			retornoFuncao = SplitNoRaiz(registro, *chaveBusca, *campoReferencia);
-
-			AtualizaRegistroArvore(registro, RRNAtual);
-
-			free(registro);
-			return 0;
-		}
-		
+		free(registro);
+		return 0;
 	}
+
+	printf("OVERFLOW!!\n");
+	// Senão, faz um split.
+	if (RRNAtual == RRNdaRaiz()) {	// Caso haja um overflow na raíz.
+		retornoFuncao = SplitNoRaiz(registro, *chaveBusca, *campoReferencia);
+
+		AtualizaRegistroArvore(registro, RRNAtual);
+
+		free(registro);
+		return 0;
+	}
+
+	// Se o overflow não foi na raiz, então é o caso geral de split.
+	printf("Inserindo a chave %d que está no RRN %d\n", *chaveBusca, *campoReferencia);
+	retornoFuncao = Split1Pra2(registro, chaveBusca, campoReferencia);
+	AtualizaRegistroArvore(registro, RRNAtual);
+
+	printf("Promove chave %d que está no RRN %d\n", *chaveBusca, *campoReferencia);
+
+	return 1;
+	//}
 }
 
 int InsereIndice(int chaveBusca, int campoReferencia) {

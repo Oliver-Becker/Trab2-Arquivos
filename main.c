@@ -635,7 +635,7 @@ int Funcionalidade10(char* arquivoEntrada) { // Carrega o arquivo de dados e o a
 	CriaArquivoDeSaida(ARQUIVO_SAIDA);	// Cria arquivo de dados.
 	CriaArvoreB();				// Cria arquivo de índice.
 
-	int retornoFuncao = InsereVetorDeRegistros(ARQUIVO_SAIDA, vetRegistros, 0);
+	int retornoFuncao = InsereVetorDeRegistros(ARQUIVO_SAIDA, vetRegistros, 1);
 
 	AlteraStatusDoArquivo(ARQUIVO_SAIDA, 1);
 	AlteraStatusDoArquivo(ARQUIVO_ARVORE, 1);
