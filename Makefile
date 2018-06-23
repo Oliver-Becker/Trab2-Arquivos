@@ -1,7 +1,7 @@
 progname=programaTrab2
 
 all:
-	gcc main.c src/*.c -o $(progname) -Iinc/.
+	gcc main.c src/*.c -o $(progname) -Iinc/. -std=c99
 
 run:
 	./$(progname)

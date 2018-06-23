@@ -757,6 +757,8 @@ int main(int argc, char *argv[]){
 		return -1;
 	}
 
+	BUFFER_POOL *buffer = CriaBufferPool();
+
 	// Vetor contendo quantos argumentos cada funcionalidade deve ter para ser executada
 	// corretamente.
 	int quantidadeArgumentos[14] = QUANTIDADE_ARGUMENTOS;
@@ -796,6 +798,8 @@ int main(int argc, char *argv[]){
 		default:
 			printf(ERRO_GERAL);
 	}
+
+	InsereArquivoBuffer(buffer);
 
 	return -1;
 }

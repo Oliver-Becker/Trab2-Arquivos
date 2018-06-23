@@ -16,6 +16,7 @@
 #include <arvoreb.h>
 
 #define TAMANHO_BUFFER 5
+#define ARQUIVO_BUFFER "buffer-info.text"
 
 typedef struct {
 	int RRN;
@@ -34,6 +35,7 @@ int ScaBufferPool(BUFFER_POOL*);
 void InsercaoBufferPool(BUFFER_POOL*, int);
 void RemocaoBufferPool(BUFFER_POOL*, int);
 REGISTRO_ARVORE* GetBufferPool(BUFFER_POOL*, int);
+void InsereArquivoBuffer(BUFFER_POOL*);
 
 
 #endif

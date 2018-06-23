@@ -27,7 +27,7 @@ BUFFER_POOL* CriaBufferPool(){
 
 int ScaBufferPool(BUFFER_POOL *buffer){
 
-	int i = 0;
+	int i = 1;
 	while(buffer->indice[i].flag){
 
 		if(buffer->indice[i].flag)
@@ -36,7 +36,7 @@ int ScaBufferPool(BUFFER_POOL *buffer){
 		i++;
 
 		if(i == TAMANHO_BUFFER-1)
-			i = 0;
+			i = 1;
 	}
 
 	return i;
@@ -103,5 +103,23 @@ REGISTRO_ARVORE* GetBufferPool(BUFFER_POOL *buffer, int RRN){
 	}
 
 	return buffer->indice[i].pagina;
+
+}
+
+void InsereArquivoBuffer(BUFFER_POOL *buffer){
+
+	FILE *fp = fopen(ARQUIVO_BUFFER, "a");
+
+	char pageFault[20] = "Page fault = ";
+	char pageHit[20] = " Page hit = ";
+	char n[2] = "\n";
+
+	fwrite(&pageFault, sizeof(pageFault), 1, fp);
+	fwrite(&buffer->pageFault, sizeof(int), 1, fp);
+	fwrite(&pageHit, sizeof(pageHit), 1, fp);
+	fwrite(&buffer->pageHit, sizeof(int), 1, fp);
+	fwrite(&n, sizeof(int), 1, fp);
+
+	fclose(fp);
 
 }
