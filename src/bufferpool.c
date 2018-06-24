@@ -25,6 +25,17 @@ BUFFER_POOL* CriaBufferPool(){
 	return buffer;
 }
 
+void DestroiBufferPool(BUFFER_POOL* buffer) {
+	if (buffer == NULL)
+		return;
+
+	for (int i = 0; i < TAMANHO_BUFFER; i++) {
+		//RemocaoBufferPool(buffer
+	}
+
+	free(buffer);
+}
+
 int ScaBufferPool(BUFFER_POOL *buffer){
 
 	int i = 1;
@@ -45,7 +56,6 @@ int ScaBufferPool(BUFFER_POOL *buffer){
 void InsercaoBufferPool(BUFFER_POOL *buffer, int RRN){
 
 	if(buffer->indice[0].RRN == -1){
-
 		buffer->indice[0].pagina = (REGISTRO_ARVORE*) malloc(sizeof(REGISTRO_ARVORE));
 		buffer->indice[0].pagina = LeRegistroArvore(RRN);
 		return;

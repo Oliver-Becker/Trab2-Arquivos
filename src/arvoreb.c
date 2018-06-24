@@ -26,8 +26,6 @@ void CriaArvoreB() {
 	fwrite(&ultimoRRN, sizeof(ultimoRRN), 1, fp);
 
 	fclose(fp);
-
-	ImprimeArquivoArvoreB();
 }
 
 void AlteraRRNdaRaiz(int RRN) {
@@ -269,8 +267,6 @@ int Split1Pra2(REGISTRO_ARVORE* registro, int* chaveBusca, int* campoReferencia)
 
 	int meio = ORDEM_DA_ARVORE / 2;
 
-	printf("meio = %d\n", meio);
-
 	// Coloca a metade da direita no registro novo.
 	MoveChavesDeRegistro(registro, novoRegistro, meio + 1);
 
@@ -349,8 +345,6 @@ int BuscaOndeInserir(REGISTRO_ARVORE* registro, int* chaveBusca, int* campoRefer
 	//if (alturaAtual == 0) {	// Quando chegar a um nó folha, pode inserir.
 		// Caso ainda tenha espaço para mais chaves no nó atual.
 	if (registro->quantidadeChaves < ORDEM_DA_ARVORE-1) {
-		printf("Inserindo chave no índice sem overflow.\n");
-
 		int ponteiro = alturaAtual ? UltimoRRN() : -1;
 
 		retornoFuncao = InsereChaveNoIndice(registro, ponteiro, *chaveBusca,
@@ -362,7 +356,6 @@ int BuscaOndeInserir(REGISTRO_ARVORE* registro, int* chaveBusca, int* campoRefer
 		return 0;
 	}
 
-	printf("OVERFLOW!!\n");
 	// Senão, faz um split.
 	if (RRNAtual == RRNdaRaiz()) {	// Caso haja um overflow na raíz.
 		retornoFuncao = SplitNoRaiz(registro, *chaveBusca, *campoReferencia);
@@ -374,11 +367,10 @@ int BuscaOndeInserir(REGISTRO_ARVORE* registro, int* chaveBusca, int* campoRefer
 	}
 
 	// Se o overflow não foi na raiz, então é o caso geral de split.
-	printf("Inserindo a chave %d que está no RRN %d\n", *chaveBusca, *campoReferencia);
 	retornoFuncao = Split1Pra2(registro, chaveBusca, campoReferencia);
 	AtualizaRegistroArvore(registro, RRNAtual);
 
-	printf("Promove chave %d que está no RRN %d\n", *chaveBusca, *campoReferencia);
+	free(registro);
 
 	return 1;
 }
@@ -408,14 +400,11 @@ int InsereIndice(int chaveBusca, int campoReferencia) {
 		InsereRegistroArvore(registro, 0);
 		
 		free(registro);
-		ImprimeArquivoArvoreB();
 		return 0;	// Finaliza a inserção, sem erros.
 	}
 
 	registro = LeRegistroArvore(raiz);
 	BuscaOndeInserir(registro, &chaveBusca, &campoReferencia, raiz, AlturaDaArvore());
-
-	ImprimeArquivoArvoreB();
 
 	return 0;
 }
@@ -452,13 +441,14 @@ int BuscaArvoreB(REGISTRO_ARVORE *reg, int chave){
 void ImprimeRegistroArvore(REGISTRO_ARVORE* reg) {
 	printf("n=%d  ", reg->quantidadeChaves);
 
-	for(int i = 0; i < ORDEM_DA_ARVORE-1; i++){
+	int i = 0;
+	for(i = 0; i < reg->quantidadeChaves; i++){
 		printf("|%d| ", reg->ponteiroSubarvore[i]);
 		printf("|%d|", reg->chaveBusca[i]);
 		printf("%d| ", reg->ponteiroDados[i]);
 	}
 
-	printf("|%d|\n", reg->ponteiroSubarvore[ORDEM_DA_ARVORE-1]);
+	printf("|%d|\n", reg->ponteiroSubarvore[i]);
 }
 
 void ImprimeArquivoArvoreB() {

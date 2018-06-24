@@ -635,6 +635,8 @@ int Funcionalidade10(char* arquivoEntrada) { // Carrega o arquivo de dados e o a
 	CriaArquivoDeSaida(ARQUIVO_SAIDA);	// Cria arquivo de dados.
 	CriaArvoreB();				// Cria arquivo de índice.
 
+	BUFFER_POOL *buffer = CriaBufferPool();
+
 	int retornoFuncao = InsereVetorDeRegistros(ARQUIVO_SAIDA, vetRegistros, 1);
 
 	AlteraStatusDoArquivo(ARQUIVO_SAIDA, 1);
@@ -656,6 +658,8 @@ int Funcionalidade11(char* valoresCampo[]) { // Insere registro aos arquivos de 
 
 	if (retornoFuncao > 0) {
 		REGISTRO* registro = InsereCamposEmRegistro(valoresCampo);
+
+		BUFFER_POOL *buffer = CriaBufferPool();
 
 		AlteraStatusDoArquivo(ARQUIVO_SAIDA, 0);
 		retornoFuncao = InsereRegistro(ARQUIVO_SAIDA, registro, 1);
@@ -686,6 +690,7 @@ int Funcionalidade12(char* chave) {
 
 	//efetua a busca caso os arquivos sejam consistentes
 	if (retornoFuncao > 0) {
+		BUFFER_POOL *buffer = CriaBufferPool();
 
 		//cria uma struct com os dados do registro da raiz para iniciar a busca
 		REGISTRO_ARVORE *reg = LeRegistroArvore(RRNdaRaiz()); 
@@ -710,8 +715,13 @@ int Funcionalidade13(char* chaveBusca) { // Remove um registro dos arquivos de d
 		retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
 
 	if (retornoFuncao > 0) {
+		BUFFER_POOL *buffer = CriaBufferPool();
+
 		AlteraStatusDoArquivo(ARQUIVO_SAIDA, 0);
 		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 0);
+
+		//ImprimeArquivoArvoreB();
+		//RemoveRegistroPorChave();
 		
 		AlteraStatusDoArquivo(ARQUIVO_SAIDA, 1);
 		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 1);
@@ -728,6 +738,8 @@ int Funcionalidade14(char* chave, char* valoresCampo[]){
 		retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
 
 	if (retornoFuncao > 0) {
+		BUFFER_POOL *buffer = CriaBufferPool();
+
 		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 0);
 
 		REGISTRO_ARVORE *reg = LeRegistroArvore(RRNdaRaiz()); 
@@ -764,8 +776,6 @@ int main(int argc, char *argv[]){
 		return -1;
 	}
 
-	BUFFER_POOL *buffer = CriaBufferPool();
-
 	// Vetor contendo quantos argumentos cada funcionalidade deve ter para ser executada
 	// corretamente.
 	int quantidadeArgumentos[14] = QUANTIDADE_ARGUMENTOS;
@@ -800,14 +810,13 @@ int main(int argc, char *argv[]){
 			return Funcionalidade12(argv[2]);
 		case 13: //função de remoção não foi feita, apenas o escopo do que seria
 			return Funcionalidade13(argv[2]);
-		case 14: //função de atualização não foi feita pois não tem a remoção
-				 //apenas o escopo do que seria
+		case 14: 
 			return Funcionalidade14(argv[2], argv+3);
 		default:
 			printf(ERRO_GERAL);
 	}
 
-	InsereArquivoBuffer(buffer); //escreve os dados do buffer pool no fim da execução do programa
+//	InsereArquivoBuffer(buffer); //escreve os dados do buffer pool no fim da execução do programa
 
 	return -1;
 }
