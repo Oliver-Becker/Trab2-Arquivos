@@ -57,6 +57,7 @@ int AcrescentaRegistroNoFinal(char* nomeArquivo, REGISTRO* registro, int indice)
 
 	int registroExiste = 0;
 
+	//faz a devida escrita dos dados do registro no arquivo
 	fwrite(&registroExiste, sizeof(int), 1, fp);
 	fwrite(&(registro->codEscola), sizeof(int), 1, fp);
 	fwrite(registro->dataInicio, sizeof(char), strlen(registro->dataInicio), fp);
@@ -78,6 +79,7 @@ int AcrescentaRegistroNoFinal(char* nomeArquivo, REGISTRO* registro, int indice)
 
 	int retorno = 1;
 
+	//insere o registro e altera o status do arquivo para consistente se tudo ocorreu perfeitamente
 	if (indice) {
 		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 0);
 		int retorno = InsereIndice(registro->codEscola, RRN);
@@ -90,10 +92,12 @@ int AcrescentaRegistroNoFinal(char* nomeArquivo, REGISTRO* registro, int indice)
 }
 
 int ComparaCampoDoRegistro(REGISTRO* registro, char* nomeDoCampo, char* valor) {
+	//verifica se o registro, nome do campo e o valor são válidos
 	if (registro == NULL || nomeDoCampo == NULL || valor == NULL) {
 		return 0;
 	}
 
+	//verifica qual é o campo a ser buscado
 	if (!strcmp(nomeDoCampo, "codEscola"))
 		return registro->codEscola == atoi(valor);
 	else if (!strcmp(nomeDoCampo, "dataInicio"))
@@ -110,6 +114,7 @@ int ComparaCampoDoRegistro(REGISTRO* registro, char* nomeDoCampo, char* valor) {
 	return 0;
 }
 
+//libera memória dos registros alocados 
 void LiberaRegistro(REGISTRO* registro) {
 	if (registro == NULL)
 		return;
@@ -125,8 +130,9 @@ void LiberaRegistro(REGISTRO* registro) {
 	registro = NULL;
 }
 
+//imprime os dados do registro
 int ImprimeRegistro(REGISTRO* registro) {
-	if (registro == NULL)
+	if (registro == NULL) //verifica se o nome do registro é válido
 		return -1;
 
 	REGISTRO* r = registro;

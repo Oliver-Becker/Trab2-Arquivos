@@ -55,7 +55,7 @@ int RRNdaRaiz() {
 	fread(&RRN, sizeof(RRN), 1, fp);
 	fclose(fp);
 
-	return RRN;
+	return RRN; //retorna o RRN da raiz
 }
 
 void AlteraAlturaDaArvore(int altura) {
@@ -68,7 +68,7 @@ void AlteraAlturaDaArvore(int altura) {
 
 	fseek(fp, POSICAO_ALTURA, SEEK_SET);	// Vai para a posição da altura no cabeçalho.
 
-	fwrite(&altura, sizeof(altura), 1, fp);
+	fwrite(&altura, sizeof(altura), 1, fp); // Atualiza a altura da árvore
 	fclose(fp);
 }
 
@@ -83,7 +83,7 @@ int AlturaDaArvore() {
 	fread(&altura, sizeof(altura), 1, fp);
 	fclose(fp);
 
-	return altura;
+	return altura; //retorna a altura da árvore
 }
 
 void AlteraUltimoRRN(int RRN) {
@@ -96,7 +96,7 @@ void AlteraUltimoRRN(int RRN) {
 
 	fseek(fp, POSICAO_ULTIMO_RRN, SEEK_SET);// Vai para a posição do ultimoRRN no cabeçalho.
 
-	fwrite(&RRN, sizeof(RRN), 1, fp);
+	fwrite(&RRN, sizeof(RRN), 1, fp); //altera o ultimo RRN
 	fclose(fp);
 }
 
@@ -111,10 +111,12 @@ int UltimoRRN() {
 	fread(&RRN, sizeof(RRN), 1, fp);
 	fclose(fp);
 
-	return RRN;
+	return RRN; //retorna o ultimo RRN
 }
 
 REGISTRO_ARVORE* CriaRegistroArvore() {
+	//aloca espaço para a struct que salvará as informações do registro da árvore B
+	//iniciando com -1 os ponteiros e a chave de busca
 	REGISTRO_ARVORE* registro = (REGISTRO_ARVORE*)malloc(sizeof(REGISTRO_ARVORE));
 	registro->quantidadeChaves = 0;
 	memset(registro->ponteiroSubarvore, -1, sizeof(int) * (ORDEM_DA_ARVORE + 1));
@@ -125,36 +127,43 @@ REGISTRO_ARVORE* CriaRegistroArvore() {
 }
 
 void InsereRegistroArvore(REGISTRO_ARVORE* registro, int RRN) {
-	if (registro == NULL || RRN < 0)
+	if (registro == NULL || RRN < 0) //verifica se o registro e o RRN são válidos
 		return;
 
 	FILE* fp = fopen(ARQUIVO_ARVORE, "rb+");
-	if (fp == NULL)
+	if (fp == NULL) //verifica se o arquivo foi aberto corretamente
 		return;
 
+	//vai para a posição do RRN desejado
 	fseek(fp, BYTE_OFFSET_ARVORE(RRN), SEEK_SET);
 
+	//efetua a escrita dos dados do registro que estão salvos na struct
 	fwrite(&registro->quantidadeChaves, sizeof(int), 1, fp);
 	for(int i = 0; i < ORDEM_DA_ARVORE-1; i++){
 		fwrite(&registro->ponteiroSubarvore[i], sizeof(int), 1, fp);
 		fwrite(&registro->chaveBusca[i], sizeof(int), 1, fp);
 		fwrite(&registro->ponteiroDados[i], sizeof(int), 1, fp);
 	}
-
 	fwrite(&registro->ponteiroSubarvore[ORDEM_DA_ARVORE-1], sizeof(int), 1, fp);
 	
 	fclose(fp);
 }
 
 REGISTRO_ARVORE* LeRegistroArvore(int RRN) {
+
 	FILE *fp = fopen(ARQUIVO_ARVORE, "rb");
-	if (fp == NULL)
+	if (fp == NULL) //verifica se o arquivo foi aberto corretamente
 		return NULL;
 
-	fseek(fp, BYTE_OFFSET_ARVORE(RRN), SEEK_SET);
+	fseek(fp, BYTE_OFFSET_ARVORE(RRN), SEEK_SET); //vai para a posição do RRN desejado
 
+	//aloca espaço para um novo registro na struct REGISTRO_ARVORE
 	REGISTRO_ARVORE *reg = (REGISTRO_ARVORE*) malloc(sizeof(REGISTRO_ARVORE));
 
+	
+	//salva as informações do registro da arvoreB na struct
+	//sendo elas a quantidade de chaves, ponteiros para o arquivo de indíce,
+	//chaves de busca e ponteiros para o arquivo de dados 
 	fread(&reg->quantidadeChaves, sizeof(int), 1, fp);
 
 	for(int i = 0; i < ORDEM_DA_ARVORE-1; i++){
@@ -168,7 +177,7 @@ REGISTRO_ARVORE* LeRegistroArvore(int RRN) {
 
 	fclose(fp);
 	
-	return reg;
+	return reg; //retorna o endereço da struct que acabou de ser criada
 }
 
 void AtualizaRegistroArvore(REGISTRO_ARVORE* registro, int RRNAtual) {
@@ -334,8 +343,7 @@ int BuscaOndeInserir(REGISTRO_ARVORE* registro, int* chaveBusca, int* campoRefer
 		}
 
 		// Se a função retornou 1, é porque houve split e deve-se inserir uma chave no 
-		// registro atual.
-		
+		// registro atual.	
 	}
 
 	//if (alturaAtual == 0) {	// Quando chegar a um nó folha, pode inserir.
@@ -373,20 +381,14 @@ int BuscaOndeInserir(REGISTRO_ARVORE* registro, int* chaveBusca, int* campoRefer
 	printf("Promove chave %d que está no RRN %d\n", *chaveBusca, *campoReferencia);
 
 	return 1;
-	//}
 }
 
 int InsereIndice(int chaveBusca, int campoReferencia) {
 
-/*	FILE* fp = fopen(ARQUIVO_ARVORE, "rb");
-	if (fp == NULL)
-		return -1;
-*/
 	REGISTRO_ARVORE* registro = NULL;
 	int raiz = RRNdaRaiz();
 
 	if (raiz == -2) {	// Caso a função retorne erro.
-//		fclose(fp);
 		return -1;
 	}
 	if (raiz < 0) {		// Caso ainda não haja nenhum registro de índice no arquivo.
@@ -413,35 +415,40 @@ int InsereIndice(int chaveBusca, int campoReferencia) {
 	registro = LeRegistroArvore(raiz);
 	BuscaOndeInserir(registro, &chaveBusca, &campoReferencia, raiz, AlturaDaArvore());
 
-
-
 	ImprimeArquivoArvoreB();
-
 
 	return 0;
 }
 
+//função de busca recursiva
 int BuscaArvoreB(REGISTRO_ARVORE *reg, int chave){
 
 	int i = 0;
-	
+
+	//procura pela posição com a chave de busca imediatamente menor que a procurada
+	//ou até a ultima chave de busca disponível 
 	while(i < reg->quantidadeChaves && chave > reg->chaveBusca[i])
 		i++;
 
+	//verifica se já encontrou a chave
 	if(chave == reg->chaveBusca[i]) {
 		int RRN = reg->ponteiroDados[i];
 		free(reg);
 		return RRN;
 	}
 
+	//se for nó folha e não encontrou a chave a ser buscada é porque ela não existe
 	if(reg->ponteiroSubarvore[0] == -1)
 		return -1;
 
+	//vai para o filho da posição atual e continua pela busca
 	int filho = reg->ponteiroSubarvore[i];
 	free(reg);
 	return BuscaArvoreB(LeRegistroArvore(filho), chave);
 }
 
+//imprime as informações do registro da árvore B tais como a quantidade de chaves,
+//os ponteiros da subarvore, as chaves de busca e os ponteiros do arquivo de dados
 void ImprimeRegistroArvore(REGISTRO_ARVORE* reg) {
 	printf("n=%d  ", reg->quantidadeChaves);
 
@@ -455,9 +462,10 @@ void ImprimeRegistroArvore(REGISTRO_ARVORE* reg) {
 }
 
 void ImprimeArquivoArvoreB() {
+
 	printf("\n==========Arquivo árvore B.==========\n");
 	FILE* fp = fopen(ARQUIVO_ARVORE, "rb");
-	if (fp == NULL) {
+	if (fp == NULL) { //verifica se o arquivo da árvore B existe
 		printf("ERRO! Arquivo de árvore B não existe.\n");
 		return;
 	}
@@ -465,6 +473,7 @@ void ImprimeArquivoArvoreB() {
 	char status;
 	int noRaiz, altura, ultimoRRN;
 
+	//faz a leitura do status, noRaiz, altura e o ultimoRRN para efetuar a impressão
 	fread(&status, sizeof(char), 1, fp);
 	fread(&noRaiz, sizeof(int), 1, fp);
 	fread(&altura, sizeof(int), 1, fp);
@@ -477,12 +486,14 @@ void ImprimeArquivoArvoreB() {
 
 	REGISTRO_ARVORE* reg;
 	int i = 0;
+	//repete a impressão enquanto não for o último RRN
 	while (i <= ultimoRRN) {
 		printf("Registro %d: ", i);
-		// reg = RecuperaRegistroArvore(i);
+		//cria uma struct temporária com a informações do registro da árvore B
+		//para efetua a impressão
 		reg = LeRegistroArvore(i);
 		ImprimeRegistroArvore(reg);
-		free(reg);
+		free(reg); //libera o espaço da struct temporária
 		i++;
 	}
 

@@ -19,15 +19,15 @@
 #define ARQUIVO_BUFFER "buffer-info.text"
 
 typedef struct {
-	int RRN;
-	int flag;
+	int RRN;  //RRN do registro
+	int flag; //flag 0 é usado apenas uma vez e flag 1 é usado duas vezes
 	REGISTRO_ARVORE *pagina;
 }PAGINA;
 
 typedef struct{
-	int pageFault;
-	int pageHit;
-	PAGINA indice[5];
+	int pageFault; //flahas do buffer pool
+	int pageHit; //acertos do buffer pool
+	PAGINA indice[5]; //buffer pool com espaço para 5 registros
 }BUFFER_POOL;
 
 BUFFER_POOL* CriaBufferPool();

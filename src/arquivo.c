@@ -19,20 +19,25 @@ void AlteraTopoDaPilha(char* nomeArquivo, int topoPilha) {
 
 	fseek(fp, 1, SEEK_SET);		// Pula o char do status para ler o topoPilha
 
+	//faz a alteração do topo da pilha
 	fwrite(&topoPilha, sizeof(topoPilha), 1, fp);
 	fclose(fp);
 }
 
+//retorna o topo da pilha atual
 int TopoDaPilha(char* nomeArquivo) {
+	//verifica se o nome do arquivo é válidp
 	if (nomeArquivo == NULL)
 		return -2;
 
+	//verifica se o arquivo foi aberto corretamente
 	FILE* fp = fopen(nomeArquivo, "rb");
 	if (fp == NULL)
 		return -2;
 
 	fseek(fp, 1, SEEK_SET);		// Pula o char do status para ler o topoPilha
 
+	//faz a leitura do topo da pilha
 	int topoPilha;
 	fread(&topoPilha, sizeof(topoPilha), 1, fp);
 	fclose(fp);
@@ -41,6 +46,7 @@ int TopoDaPilha(char* nomeArquivo) {
 }
 
 void AlteraStatusDoArquivo(char* nomeArquivo, char status) {
+	//confere se o nome do arquivo e se o valor do status são válido 
 	if (nomeArquivo == NULL || (status != 0 && status != 1))
 		return;
 
@@ -48,11 +54,14 @@ void AlteraStatusDoArquivo(char* nomeArquivo, char status) {
 	if (fp == NULL)
 		return;
 
+	//escreve o novo valor do status do arquivo
 	fwrite(&status, sizeof(status), 1, fp);
 	fclose(fp);
 }
 
+//verifica qual é a consistência do arquivo e retorna tal valor
 int ConfereConsistenciaDoArquivo(char* nomeArquivo) {
+	
 	if (nomeArquivo == NULL)
 		return 0;
 

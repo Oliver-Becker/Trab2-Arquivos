@@ -679,18 +679,25 @@ int Funcionalidade11(char* valoresCampo[]) { // Insere registro aos arquivos de 
 // Busca um registro do arquivo de dados a partir de uma chave de busca, utilizando o índice montado
 // em árvore B.
 int Funcionalidade12(char* chave) {
-	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
+	//verifica se o status do arquivo de saída e do arquivo de indíces são válidos
+	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_SAIDA);
 	if (retornoFuncao > 0)
 		retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
 
+	//efetua a busca caso os arquivos sejam consistentes
 	if (retornoFuncao > 0) {
+
+		//cria uma struct com os dados do registro da raiz para iniciar a busca
 		REGISTRO_ARVORE *reg = LeRegistroArvore(RRNdaRaiz()); 
+		//retorna o RRN ou um valor negativo caso não encontre a chave
 		retornoFuncao = BuscaArvoreB(reg, atoi(chave));
 
+		//caso a busca seja bem sucedida é preciso tranformar o RRN em char*
+		//afim de igualar o parâmetro da função Funcionalidade4
 		if(retornoFuncao > 0){
 			char str[12];
 			sprintf(str, "%d", retornoFuncao);
-			return Funcionalidade4(str);
+			return Funcionalidade4(str); //busca o registro no arquivo de daodos e imprime ele
 		}
 	}
 
@@ -698,7 +705,7 @@ int Funcionalidade12(char* chave) {
 }
 
 int Funcionalidade13(char* chaveBusca) { // Remove um registro dos arquivos de dados e de índices.
-	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
+	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_SAIDA);
 	if (retornoFuncao > 0)
 		retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
 
@@ -716,7 +723,7 @@ int Funcionalidade13(char* chaveBusca) { // Remove um registro dos arquivos de d
 // Atualiza um registro do arquivo de dados a partir de uma chave de busca.
 int Funcionalidade14(char* chave, char* valoresCampo[]){
 
-	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
+	int retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_SAIDA);
 	if (retornoFuncao > 0)
 		retornoFuncao = ConfereConsistenciaDoArquivo(ARQUIVO_ARVORE);
 
@@ -791,15 +798,16 @@ int main(int argc, char *argv[]){
 			return Funcionalidade11(argv+2);
 		case 12:
 			return Funcionalidade12(argv[2]);
-		case 13:
+		case 13: //função de remoção não foi feita, apenas o escopo do que seria
 			return Funcionalidade13(argv[2]);
-		case 14:
+		case 14: //função de atualização não foi feita pois não tem a remoção
+				 //apenas o escopo do que seria
 			return Funcionalidade14(argv[2], argv+3);
 		default:
 			printf(ERRO_GERAL);
 	}
 
-	InsereArquivoBuffer(buffer);
+	InsereArquivoBuffer(buffer); //escreve os dados do buffer pool no fim da execução do programa
 
 	return -1;
 }
