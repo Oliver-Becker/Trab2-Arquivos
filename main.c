@@ -520,7 +520,6 @@ int Funcionalidade2() { //função que recupera todos os registros
 		VETREGISTROS* vetRegistros = RecuperaTodosRegistros();
 
 		retornoFuncao = ImprimeVetorDeRegistros(vetRegistros);
-		ImprimeArquivoArvoreB();
 	}
 
 	return ImprimeErro(retornoFuncao); 
@@ -640,6 +639,7 @@ int Funcionalidade10(char* arquivoEntrada) { // Carrega o arquivo de dados e o a
 	int retornoFuncao = InsereVetorDeRegistros(ARQUIVO_SAIDA, vetRegistros, 1);
 
 	AlteraStatusDoArquivo(ARQUIVO_SAIDA, 1);
+	DestroiBufferPool(buffer);
 	AlteraStatusDoArquivo(ARQUIVO_ARVORE, 1);
 
 	if (retornoFuncao > 0) {
@@ -672,6 +672,7 @@ int Funcionalidade11(char* valoresCampo[]) { // Insere registro aos arquivos de 
 		}
 */
 		LiberaRegistro(registro);
+		DestroiBufferPool(buffer);
 
 		if (retornoFuncao > 0)
 			printf("Registro inserido com sucesso.\n");
@@ -697,6 +698,7 @@ int Funcionalidade12(char* chave) {
 		//retorna o RRN ou um valor negativo caso não encontre a chave
 		retornoFuncao = BuscaArvoreB(reg, atoi(chave));
 
+		DestroiBufferPool(buffer);
 		//caso a busca seja bem sucedida é preciso tranformar o RRN em char*
 		//afim de igualar o parâmetro da função Funcionalidade4
 		if(retornoFuncao > 0){
@@ -724,6 +726,7 @@ int Funcionalidade13(char* chaveBusca) { // Remove um registro dos arquivos de d
 		//RemoveRegistroPorChave();
 		
 		AlteraStatusDoArquivo(ARQUIVO_SAIDA, 1);
+		DestroiBufferPool(buffer);
 		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 1);
 	}
 
@@ -752,6 +755,8 @@ int Funcionalidade14(char* chave, char* valoresCampo[]){
 			//remove
 			//insere
 		}
+
+		DestroiBufferPool(buffer);
 
 		AlteraStatusDoArquivo(ARQUIVO_ARVORE, 1);
 
@@ -815,8 +820,6 @@ int main(int argc, char *argv[]){
 		default:
 			printf(ERRO_GERAL);
 	}
-
-//	InsereArquivoBuffer(buffer); //escreve os dados do buffer pool no fim da execução do programa
 
 	return -1;
 }

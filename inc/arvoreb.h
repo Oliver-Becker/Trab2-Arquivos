@@ -34,6 +34,8 @@ void AlteraAlturaDaArvore(int altura);
 int AlturaDaArvore();
 void AlteraUltimoRRN(int RRN);
 int UltimoRRN();
+void InsereRegistroArvore(REGISTRO_ARVORE* registro, int RRN);
+REGISTRO_ARVORE* LeRegistroArvore(int RRN);
 int InsereIndice(int chave, int RRN);
 REGISTRO_ARVORE* LeRegistroArvore(int);
 int BuscaArvoreB(REGISTRO_ARVORE*, int);

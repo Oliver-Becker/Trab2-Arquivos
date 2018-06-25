@@ -21,21 +21,24 @@
 typedef struct {
 	int RRN;  //RRN do registro
 	int flag; //flag 0 é usado apenas uma vez e flag 1 é usado duas vezes
-	REGISTRO_ARVORE *pagina;
+	int consistencia; //0 indica que o registro foi modificado e deve ser escrito no arquivo
+	REGISTRO_ARVORE registro;
 }PAGINA;
 
 typedef struct{
 	int pageFault; //flahas do buffer pool
 	int pageHit; //acertos do buffer pool
-	PAGINA indice[5]; //buffer pool com espaço para 5 registros
+	int localRaiz;	//número da pagina em que está a raiz
+	PAGINA pagina[5]; //buffer pool com espaço para 5 registros
 }BUFFER_POOL;
 
 BUFFER_POOL* CriaBufferPool();
-int ScaBufferPool(BUFFER_POOL*);
-void InsercaoBufferPool(BUFFER_POOL*, int);
-void RemocaoBufferPool(BUFFER_POOL*, int);
-REGISTRO_ARVORE* GetBufferPool(BUFFER_POOL*, int);
-void InsereArquivoBuffer(BUFFER_POOL*);
+void DestroiBufferPool(BUFFER_POOL*);
 
+REGISTRO_ARVORE* LeRegistroBufferPool(BUFFER_POOL*, int RRN);	// Função Get(RRN)
+void InsereRegistroBufferPool(BUFFER_POOL*, int RRN, REGISTRO_ARVORE*);	// Função Put(RRN, page)
+void AtualizaRegistrosInconsistentes(BUFFER_POOL*);	// Função Flush()
+
+void InsereArquivoBuffer(BUFFER_POOL*);	// Escreve o total de Page Hit e Page Fault no arquivo
 
 #endif
